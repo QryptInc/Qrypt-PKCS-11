@@ -12,20 +12,20 @@ target_include_directories(${LIBRARYNAME}
     ${RapidJSON_INCLUDE_DIRS}
   PUBLIC
     ${CMAKE_SOURCE_DIR}/include/MeteringClient
-    ${CURL_INCLUDE_DIRS}
-    "./include"
   PRIVATE
+    ${CURL_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${TARGET_BUILD_SPECIFIC_INCLUDE})
-target_link_libraries(${LIBRARYNAME} PUBLIC
-    lcurl
-    lssl
+target_link_libraries(${LIBRARYNAME} PRIVATE
+    curl
+    ssl
     ${TARGET_BUILD_SPECIFIC_LIBRARIES})
 
-# Set default install target if not dictated on command line
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# Set default install target
+# TODO: Provide more flexibility?
+# if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build CACHE PATH "..." FORCE)
-endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS ${LIBRARYNAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
