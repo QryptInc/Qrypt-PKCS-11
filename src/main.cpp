@@ -38,15 +38,11 @@
 #define CRYPTOKI_EXPORTS
 
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <string.h>
-#include <string>
-#include <vector>
+#include <cstring>         // strncpy, memset
 
-#include "cryptoki.h"
-#include "log.h"
-#include "GlobalData.h"
-#include "RandomBuffer.h"
+#include "cryptoki.h"      // PKCS#11 types
+#include "log.h"           // logging macros
+#include "GlobalData.h"    // GlobalData
 
 #if defined(__GNUC__) && \
 	(__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) || \

@@ -1,7 +1,9 @@
-#include <string.h>
-#include <sys/mman.h>
+#include <cstring>         // memset
+#include <sys/mman.h>      // mlock
+#include <stdexcept>       // std::runtime_error
 
-#include "log.h"
+#include "log.h"           // DEBUG_MSG
+
 #include "RandomBuffer.h"
 
 // Zero out buffer[lo, hi)

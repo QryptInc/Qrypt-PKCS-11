@@ -1,9 +1,9 @@
 #ifndef _QRYPT_RANDOM_COLLECTOR_H
 #define _QRYPT_RANDOM_COLLECTOR_H
 
-#include <string>
+#include "cryptoki.h"   // CK_RV
 
-#include "cryptoki.h"
+const uint64_t KB = 1024;
 
 class RandomCollector {
     public:

@@ -1,10 +1,9 @@
 #ifndef _QRYPT_WRAPPER_RANDOMBUFFER_H
 #define _QRYPT_WRAPPER_RANDOMBUFFER_H
 
-#include <string>
+#include "cryptoki.h"          // CK_RV
 
-#include "cryptoki.h"
-#include "MeteringClientWrapper.h"
+#include "RandomCollector.h"   // RandomCollector
 
 class RandomBuffer {
     public:

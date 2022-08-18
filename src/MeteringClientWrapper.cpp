@@ -2,12 +2,11 @@
  * Edited from file of the same name in QDARACLI -Sam
  */
 
-#include <cstring>
-#include <fstream>
+#include <cstring>     // strncmp
+
+#include "log.h"       // logging macros
 
 #include "MeteringClientWrapper.h"
-#include "HttpRandomGetter.h"
-#include "log.h"
 
 MeteringClientWrapper::MeteringClientWrapper(std::string token) {
     this->token = token;

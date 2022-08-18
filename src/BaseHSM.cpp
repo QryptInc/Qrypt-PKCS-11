@@ -1,9 +1,8 @@
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <string>
+#include <dlfcn.h>    // dlopen
 
-#include "pkcs11.h"
-#include "log.h"
+#include "log.h"      // logging macros
+
 #include "BaseHSM.h"
 
 bool allFunctionsNonNULL(CK_FUNCTION_LIST_PTR list) {

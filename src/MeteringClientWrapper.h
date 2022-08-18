@@ -5,17 +5,13 @@
 #ifndef _QRYPT_WRAPPER_METERINGCLIENT_H
 #define _QRYPT_WRAPPER_METERINGCLIENT_H
 
-#include <map>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <vector>
+#include <memory>     // std::shared_ptr
+#include <string>     // std::string
 
-#include "cryptoki.h"
-#include "HttpRandomGetter.h"
-#include "RandomCollector.h"
+#include "cryptoki.h"            // CK_RV
+#include "HttpRandomGetter.h"    // meteringclientlib::HttpRandomGetter
+#include "RandomCollector.h"     // RandomCollector
 
-const uint64_t KB = 1024;
 const std::string EAAS_API_ENDPOINT = "api-eus.qrypt.com";
 
 // MeteringClientWrapper is a wrapper class to pull random from MeteringClient

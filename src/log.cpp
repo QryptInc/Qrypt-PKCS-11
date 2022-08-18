@@ -30,11 +30,11 @@
  Implements logging functions.
  *****************************************************************************/
 
-#include <stdarg.h>
-#include <syslog.h>
-#include <stdio.h>
-#include <sstream>
-#include <vector>
+#include <stdarg.h>   // va_*
+#include <stdio.h>    // fprintf, fflush, stderr
+#include <sstream>    // std::stringstream
+#include <vector>     // std::vector
+
 #include "log.h"
 
 const int DEFAULT_MAX_LOG_LEVEL = LOG_INFO;

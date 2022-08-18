@@ -31,9 +31,9 @@
  Contains OS-specific implementations of intraprocess mutex functions.
  *****************************************************************************/
 
-#include "log.h"
+#include "log.h" // logging macros
+
 #include "osmutex.h"
-#include "cryptoki.h"
 
 // My feeble attempt to try and get this to cross-compile
 #define HAVE_PTHREAD_H 1
