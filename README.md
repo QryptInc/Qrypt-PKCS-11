@@ -7,13 +7,14 @@ Qryptoki is a wrapper of the PKCS#11 interface that returns quantum-sourced entr
 ## Requirements
   * Supported OSes
     * Ubuntu (tested on 20.04)
+    * Fedora (tested on 28)
   * Dependencies
     * CMake (>= 3.19)
-    * libcurl
-    * OpenSSL
-    * RapidJSON
-    * GTest
-    * A "base HSM" that will be used to satisfy PKCS#11 functions not handled by Qryptoki
+    * libcurl (libcurl4-openssl-dev on Ubuntu, libcurl-devel on Fedora)
+    * OpenSSL (libssl-dev, openssl-devel)
+    * RapidJSON (rapidjson-dev, rapidjson-devel)
+    * GTest + GMock (Easiest is to clone from source and build as standalone CMake project. See [github.com/google/googletest/tree/main/googletest](https://github.com/google/googletest/tree/main/googletest).)
+  * A "base HSM" that will be used to satisfy PKCS#11 functions not handled by Qryptoki
   * An active Qrypt entropy token, attainable at [portal.qrypt.com](https://portal.qrypt.com)
 
 ## Getting Started
