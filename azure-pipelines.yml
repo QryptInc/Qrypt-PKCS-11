@@ -23,7 +23,7 @@ jobs:
       mkdir build && cd build
       cmake ..
       make
-      make install
+      sudo make install
     displayName: install GTest
   - bash: |
       cd tmp && mkdir softhsm && cd softhsm
@@ -31,5 +31,5 @@ jobs:
       cd SoftHSMv2
       ./configure
       make
-      make install
+      sudo make install
     displayName: install SoftHSM
