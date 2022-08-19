@@ -45,5 +45,5 @@ jobs:
       cmake ..
       make
     displayName: build qryptoki
-  - bash: ./gtests/qryptoki_gtests
+  - bash: ./build/gtests/qryptoki_gtests
     displayName: qryptoki GTests
