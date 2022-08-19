@@ -17,7 +17,7 @@ jobs:
   - bash: cmake --version
     displayName: check cmake
   - bash: |
-      cd pipeline/files
+      cd pipeline
       git clone --depth 1 --branch release-1.12.0 https://github.com/google/googletest.git
       cd googletest
       mkdir build && cd build
@@ -26,7 +26,7 @@ jobs:
       sudo make install
     displayName: install GTest
   - bash: |
-      cd pipeline/files
+      cd pipeline
       tar -xzvf softhsm-2.6.1.tar.gz && rm softhsm-2.6.1.tar.gz
       cd softhsm-2.6.1
       ./configure
