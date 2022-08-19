@@ -1,9 +1,9 @@
 #ifndef _QRYPT_BASEHSM_H
 #define _QRYPT_BASEHSM_H
 
-#include <string>
+#include <string>     // std::string
 
-#include "cryptoki.h"
+#include "cryptoki.h" // PKCS#11 types
 
 class BaseHSM {
     public:

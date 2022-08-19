@@ -1,8 +1,10 @@
 #include <stdlib.h>
-#include <dlfcn.h>
+#include <stdexcept>     // std::runtime_error
 
-#include "log.h"
-#include "osmutex.h"
+#include "log.h"                    // logging macros
+#include "osmutex.h"                // mutex functions
+#include "MeteringClientWrapper.h"  // MeteringClientWrapper
+
 #include "GlobalData.h"
 
 GlobalData::GlobalData() {

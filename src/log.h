@@ -33,7 +33,7 @@
 #ifndef _QRYPT_WRAPPER_LOG_H
 #define _QRYPT_WRAPPER_LOG_H
 
-#include <syslog.h> // LOG_ERR, etc.
+#include <syslog.h>     // LOG_ERR, etc.
 
 /* Logging errors */
 #ifndef _WIN32

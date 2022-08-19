@@ -1,10 +1,11 @@
 #ifndef _QRYPT_WRAPPER_GLOBALDATA_H
 #define _QRYPT_WRAPPER_GLOBALDATA_H
 
-#include "cryptoki.h"
-#include "BaseHSM.h"
-#include "RandomBuffer.h"
-#include "RandomCollector.h"
+#include "cryptoki.h"         // PKCS#11 types
+
+#include "BaseHSM.h"          // BaseHSM
+#include "RandomCollector.h"  // RandomCollector
+#include "RandomBuffer.h"     // RandomBuffer
 
 class GlobalData {
     public:
