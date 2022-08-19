@@ -1,19 +1,35 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
-
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+jobs:
+- job: BuildUbuntu
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - bash: |
+      apt-get update
+      apt-get -y install build-essential
+      apt-get -y install curl git
+      apt-get -y install libcurl4-openssl-dev
+      apt-get -y install libssl-dev
+      apt-get -y install rapidjson-dev
+    displayName: apt-get installs
+  - bash: cmake --version
+    displayName: check cmake
+  - bash: |
+      mkdir tmp && cd tmp && mkdir gtest && cd gtest
+      git clone --depth 1 --branch release-1.12.0 https://github.com/google/googletest.git
+      cd googletest
+      mkdir build && cd build
+      cmake ..
+      make
+      make install
+    displayName: install GTest
+  - bash: |
+      cd tmp && mkdir softhsm && cd softhsm
+      git clone --depth 1 --branch 2.6.1 https://github.com/opendnssec/SoftHSMv2.git
+      cd SoftHSMv2
+      ./configure
+      make
+      make install
+    displayName: install SoftHSM
