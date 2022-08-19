@@ -7,12 +7,12 @@ jobs:
     vmImage: ubuntu-latest
   steps:
   - bash: |
-      apt-get update
-      apt-get -y install build-essential
-      apt-get -y install curl git
-      apt-get -y install libcurl4-openssl-dev
-      apt-get -y install libssl-dev
-      apt-get -y install rapidjson-dev
+      sudo apt-get update
+      sudo apt-get -y install build-essential
+      sudo apt-get -y install curl git
+      sudo apt-get -y install libcurl4-openssl-dev
+      sudo apt-get -y install libssl-dev
+      sudo apt-get -y install rapidjson-dev
     displayName: apt-get installs
   - bash: cmake --version
     displayName: check cmake
