@@ -13,18 +13,7 @@ TEST (InitializeTests, AlreadyInitialized) {
 }
 
 TEST (InitializeTests, EmptyBaseHSM) {
-    char *base_hsm = getenv(BASE_HSM_ENV_VAR);
-    char *base_hsm_copy = NULL;
-
-    if(base_hsm != NULL) {
-        size_t base_hsm_len = strlen(base_hsm);
-
-        base_hsm_copy = new char[base_hsm_len + 1];
-        strncpy(base_hsm_copy, base_hsm, base_hsm_len + 1);
-    }
-
-    setenv(BASE_HSM_ENV_VAR, EMPTY_PATH, 1);
-    setenv(EAAS_TOKEN_ENV_VAR, VALID_TOKEN, 1);
+    char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, EMPTY_PATH);
 
     CK_RV rv = initializeSingleThreaded();
     EXPECT_EQ(rv, CKR_QRYPT_BASE_HSM_EMPTY);
@@ -32,12 +21,7 @@ TEST (InitializeTests, EmptyBaseHSM) {
     rv = finalize();
     EXPECT_EQ(rv, CKR_CRYPTOKI_NOT_INITIALIZED);
 
-    if(base_hsm_copy == NULL)
-        unsetenv(BASE_HSM_ENV_VAR);
-    else {
-        setenv(BASE_HSM_ENV_VAR, base_hsm_copy, 1);
-        delete[] base_hsm_copy;
-    }
+    revertEnvVar(BASE_HSM_ENV_VAR, stashed_base_hsm);
 }
 
 TEST (InitializeTests, BadArgsReservedNonNULL) {

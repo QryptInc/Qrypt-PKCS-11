@@ -1,10 +1,15 @@
 trigger:
 - main
 
+variables:
+  - group: qryptoki-github
+
 jobs:
 - job: BuildUbuntu
   pool:
     vmImage: ubuntu-latest
+  variables:
+    base-hsm-path: "/usr/local/lib/softhsm/libsofthsm2.so"
   steps:
   - bash: |
       sudo apt-get update
@@ -45,5 +50,8 @@ jobs:
       cmake ..
       make
     displayName: build qryptoki
-  - bash: ./build/gtests/qryptoki_gtests
+  - bash: |
+      export QRYPT_BASE_HSM_PATH=$(base-hsm-path)
+      export QRYPT_EAAS_TOKEN=$(eaas-token)
+      ./build/gtests/qryptoki_gtests
     displayName: qryptoki GTests

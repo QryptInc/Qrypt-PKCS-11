@@ -14,11 +14,12 @@ static const char *CA_CERT_ENV_VAR = "QRYPT_CA_CERT_PATH";
 
 static const char *EMPTY_TOKEN = "";
 static const char *BOGUS_TOKEN = "bogustoken";
-static const char *VALID_TOKEN = "PASTE A VALID QRYPT EAAS TOKEN HERE";
-// ^ Change me!
 
 static const char *EMPTY_PATH = "";
 static const char *BOGUS_PATH = "boguspath";
+
+char *setEnvVar(const char *var_name, const char *new_value);
+void revertEnvVar(const char *var_name, char *stashed_value);
 
 CK_RV initializeSingleThreaded();
 CK_RV initializeMultiThreaded();
