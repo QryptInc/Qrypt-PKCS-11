@@ -4,6 +4,30 @@
 #include "pkcs11.h"
 #include "common.h"
 
+char *setEnvVar(const char *var_name, const char *new_value) {
+    char *old_value = getenv(var_name);
+
+    if(old_value == NULL) return NULL;
+
+    size_t old_value_len = strlen(old_value);
+    char *old_value_copy = new char[old_value_len + 1];
+    
+    for(size_t i = 0; i < old_value_len + 1; i++)
+        old_value_copy[i] = old_value[i];
+    
+    setenv(var_name, new_value, 1);
+    return old_value_copy;
+}
+
+void revertEnvVar(const char *var_name, char *stashed_value) {
+    if(stashed_value == NULL) {
+        unsetenv(var_name);
+    } else {
+        setenv(var_name, stashed_value, 1);
+        delete[] stashed_value;
+    }
+}
+
 CK_RV initializeSingleThreaded() {
     return C_Initialize(NULL_PTR);
 }

@@ -1,19 +1,57 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
+variables:
+  - group: qryptoki-github
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+jobs:
+- job: BuildUbuntu
+  pool:
+    vmImage: ubuntu-latest
+  variables:
+    base-hsm-path: "/usr/local/lib/softhsm/libsofthsm2.so"
+  steps:
+  - bash: |
+      sudo apt-get update
+      sudo apt-get -y install build-essential
+      sudo apt-get -y install curl git
+      sudo apt-get -y install libcurl4-openssl-dev
+      sudo apt-get -y install libssl-dev
+      sudo apt-get -y install rapidjson-dev
+    displayName: apt-get installs
+  - bash: cmake --version
+    displayName: check cmake
+  - bash: |
+      cd pipeline
+      git clone --depth 1 --branch release-1.12.0 https://github.com/google/googletest.git
+      cd googletest
+      mkdir build && cd build
+      cmake ..
+      make
+      sudo make install
+    displayName: install GTest
+  - bash: |
+      cd pipeline
+      tar -xzvf softhsm-2.6.1.tar.gz && rm softhsm-2.6.1.tar.gz
+      cd softhsm-2.6.1
+      ./configure
+      make
+      sudo make install
+    displayName: install SoftHSM
+  - bash: |
+      cd deps/qrypt/MeteringClient
+      mkdir build && cd build
+      cmake ..
+      make
+      make install
+    displayName: install MeteringClient
+  - bash: |
+      mkdir build && cd build
+      cmake ..
+      make
+    displayName: build qryptoki
+  - bash: |
+      export QRYPT_BASE_HSM_PATH=$(base-hsm-path)
+      export QRYPT_EAAS_TOKEN=$(eaas-token)
+      ./build/gtests/qryptoki_gtests
+    displayName: qryptoki GTests
