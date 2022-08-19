@@ -46,6 +46,11 @@ jobs:
       make install
     displayName: install MeteringClient
   - bash: |
+      cd deps/qrypt/MeteringClient/build
+      gtests/lib/MeteringClientlib_tst
+      gtests/src/metering_client_tst
+    displayName: MeteringClient GTests
+  - bash: |
       mkdir build && cd build
       cmake ..
       make
