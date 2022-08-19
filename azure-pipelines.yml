@@ -33,3 +33,17 @@ jobs:
       make
       sudo make install
     displayName: install SoftHSM
+  - bash: |
+      cd deps/qrypt/MeteringClient
+      mkdir build && cd build
+      cmake ..
+      make
+      make install
+    displayName: install MeteringClient
+  - bash: |
+      mkdir build && cd build
+      cmake ..
+      make
+    displayName: build qryptoki
+  - bash: ./gtests/qryptoki_gtests
+    displayName: qryptoki GTests
