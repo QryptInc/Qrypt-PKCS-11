@@ -215,8 +215,12 @@ TEST(BufferTests, NoReuse) {
         output_stream_bytes_idx += request_size_in_bytes;
     }
 
-    bool *seen = new bool[total_random_in_64_bits];
-    for(size_t i = 0; i < total_random_in_64_bits; i++)
+    // Possible values in output_stream go from 1 to total_random_in_64_bits
+    // We expect 0 to never appear and anything from 1 to total_random_in_64_bits
+    // to appear at most once.
+
+    bool *seen = new bool[total_random_in_64_bits + 1];
+    for(size_t i = 0; i < total_random_in_64_bits + 1; i++)
         seen[i] = false;
 
     for(size_t i = 0; i < sum_request_sizes_in_64_bits; i++) {
