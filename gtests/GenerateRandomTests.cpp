@@ -191,6 +191,12 @@ TEST (GenerateRandomTests, ValidRequestManyThreads) {
     const size_t len = 300;
     CK_BYTE data[NUM_THREADS][len];
 
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        for(size_t j = 0; j < len; j++) {
+            data[i][j] = (CK_BYTE)0;
+        }
+    }
+
     for(size_t i = 0; i < NUM_THREADS; i++)
         threads[i] = std::thread(getRandom, slotID, data[i], len, std::ref(rvs[i]));
     
