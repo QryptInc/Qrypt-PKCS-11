@@ -1,0 +1,62 @@
+trigger:
+- main
+
+variables:
+  - group: qryptoki-github
+
+jobs:
+- job: BuildUbuntu
+  pool:
+    vmImage: ubuntu-latest
+  variables:
+    base-hsm-path: "/usr/local/lib/softhsm/libsofthsm2.so"
+  steps:
+  - bash: |
+      sudo apt-get update
+      sudo apt-get -y install build-essential
+      sudo apt-get -y install curl git
+      sudo apt-get -y install libcurl4-openssl-dev
+      sudo apt-get -y install libssl-dev
+      sudo apt-get -y install rapidjson-dev
+    displayName: apt-get installs
+  - bash: cmake --version
+    displayName: check cmake
+  - bash: |
+      cd pipeline
+      git clone --depth 1 --branch release-1.12.0 https://github.com/google/googletest.git
+      cd googletest
+      mkdir build && cd build
+      cmake ..
+      make
+      sudo make install
+    displayName: install GTest
+  - bash: |
+      cd pipeline
+      tar -xzvf softhsm-2.6.1.tar.gz && rm softhsm-2.6.1.tar.gz
+      cd softhsm-2.6.1
+      ./configure
+      make
+      sudo make install
+    displayName: install SoftHSM
+  - bash: |
+      cd deps/qrypt/MeteringClient
+      mkdir build && cd build
+      cmake ..
+      make
+      make install
+    displayName: install MeteringClient
+  - bash: |
+      cd deps/qrypt/MeteringClient/build
+      gtests/lib/MeteringClientlib_tst
+      gtests/src/metering_client_tst
+    displayName: MeteringClient GTests
+  - bash: |
+      mkdir build && cd build
+      cmake ..
+      make
+    displayName: build qryptoki
+  - bash: |
+      export QRYPT_BASE_HSM_PATH=$(base-hsm-path)
+      export QRYPT_EAAS_TOKEN=$(eaas-token)
+      ./build/gtests/qryptoki_gtests
+    displayName: qryptoki GTests
