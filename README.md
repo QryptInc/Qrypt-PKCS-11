@@ -68,7 +68,7 @@ If all tests pass, you're good to go! The library to link to is build/libqryptok
 
 ## Documentation, support, and feedback
 
-Nonexistent (for now).
+Check out the repo's wiki pages here on GitHub!
 
 ## Contributing
 
