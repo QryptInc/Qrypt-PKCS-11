@@ -40,9 +40,10 @@
 #include <stdlib.h>
 #include <cstring>         // strncpy, memset
 
-#include "cryptoki.h"      // PKCS#11 types
-#include "log.h"           // logging macros
-#include "GlobalData.h"    // GlobalData
+#include "cryptoki.h"                    // PKCS#11 types
+#include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
+#include "log.h"                         // logging macros
+#include "GlobalData.h"                  // GlobalData
 
 #if defined(__GNUC__) && \
 	(__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) || \

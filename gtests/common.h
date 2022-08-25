@@ -1,7 +1,7 @@
 #ifndef _QRYPT_WRAPPER_GTEST_COMMON_H
 #define _QRYPT_WRAPPER_GTEST_COMMON_H
 
-#include "pkcs11.h"
+#include "cryptoki.h"
 
 static const char *GTEST_TOKEN_LABEL = "gtesttoken";
 static const size_t GTEST_TOKEN_LABEL_LEN = 10;

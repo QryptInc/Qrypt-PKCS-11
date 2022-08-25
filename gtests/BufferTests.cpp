@@ -2,6 +2,8 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 
+#include "qryptoki_pkcs11_vendor_defs.h"
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

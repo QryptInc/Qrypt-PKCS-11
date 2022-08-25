@@ -2,7 +2,7 @@
 #define _QRYPT_MOCK_RANDOM_COLLECTOR_H
 
 #include "gmock/gmock.h"
-#include "pkcs11.h"
+#include "cryptoki.h"
 #include "RandomCollector.h"
 
 class MockRandomCollector : public RandomCollector {

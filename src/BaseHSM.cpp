@@ -1,7 +1,8 @@
 #include <stdlib.h>
-#include <dlfcn.h>    // dlopen
+#include <dlfcn.h>                       // dlopen
 
-#include "log.h"      // logging macros
+#include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
+#include "log.h"                         // logging macros
 
 #include "BaseHSM.h"
 

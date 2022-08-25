@@ -4,7 +4,8 @@
 
 #include <cstring>     // strncmp
 
-#include "log.h"       // logging macros
+#include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
+#include "log.h"                         // logging macros
 
 #include "MeteringClientWrapper.h"
 

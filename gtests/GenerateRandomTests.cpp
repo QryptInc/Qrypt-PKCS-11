@@ -1,5 +1,7 @@
 #include <thread>
 
+#include "qryptoki_pkcs11_vendor_defs.h"
+
 #include "gtest/gtest.h"
 #include "common.h"
 
