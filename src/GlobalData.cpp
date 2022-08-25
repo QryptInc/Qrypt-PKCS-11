@@ -34,15 +34,10 @@ CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
     } else {
         bool osLockingOk = pInitArgs->flags & CKF_OS_LOCKING_OK;
 
-        CK_CREATEMUTEX create;
-        CK_DESTROYMUTEX destroy;
-        CK_LOCKMUTEX lock;
-        CK_UNLOCKMUTEX unlock;
-
-        create = pInitArgs->CreateMutex;
-        destroy = pInitArgs->DestroyMutex;
-        lock = pInitArgs->LockMutex;
-        unlock = pInitArgs->UnlockMutex;
+        CK_CREATEMUTEX create = pInitArgs->CreateMutex;
+        CK_DESTROYMUTEX destroy = pInitArgs->DestroyMutex;
+        CK_LOCKMUTEX lock = pInitArgs->LockMutex;
+        CK_UNLOCKMUTEX unlock = pInitArgs->UnlockMutex;
 
         bool oneNonNull = create || destroy || lock || unlock;
         bool allNonNull = create && destroy && lock && unlock;
@@ -69,7 +64,7 @@ CK_RV GlobalData::initialize(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
     if(rv != CKR_OK) return rv;
 
     // Create mutex for access to random buffer
-    CK_VOID_PTR mutex;
+    CK_VOID_PTR mutex = NULL;
     
     rv = createMutexIfNecessary(&mutex);
     if(rv != CKR_OK) return rv;
