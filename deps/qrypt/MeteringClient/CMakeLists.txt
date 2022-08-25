@@ -14,7 +14,6 @@ set(LIBRARYNAME MeteringClient)
 set(LIBRARY_HEADERS "${CMAKE_SOURCE_DIR}/include/MeteringClient/RandomGetter.h"
 	"${CMAKE_SOURCE_DIR}/include/MeteringClient/HttpRandomGetter.h"
 	"${CMAKE_SOURCE_DIR}/include/MeteringClient/ImplPtrTemplate_h.h")
-set(LIBRARYNAMEGTEST "${LIBRARYNAME}_gtest")
 	
 # Enable fPIC for Linux?
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

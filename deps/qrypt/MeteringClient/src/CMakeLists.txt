@@ -2,7 +2,7 @@
 set(SOURCES AccessToken.cpp CurlWrapper.cpp HttpRandomGetter.cpp RandomGetter.cpp base64.cpp CommonUtils.cpp)
 
 # add a library for output
-add_library(${LIBRARYNAME} STATIC ${SOURCES} ${LIBRARY_HEADERS})
+add_library(${LIBRARYNAME} SHARED ${SOURCES} ${LIBRARY_HEADERS})
 target_compile_features(${LIBRARYNAME} PUBLIC cxx_std_14)
 set_target_properties(${LIBRARYNAME} PROPERTIES
                       VERSION ${PROJECT_VERSION}

@@ -1,3 +1,4 @@
 # Build directories
 build/*
 deps/qrypt/MeteringClient/build/*
+end-to-end-example/build/*

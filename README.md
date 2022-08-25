@@ -58,7 +58,16 @@ Now, we run the tests. (Don't worry! They only use your token for about 5KB of Q
 ./gtests/qryptoki_gtests
 ```
 
-If all tests pass, you're good to go! The library to link to is build/libqryptoki.so, and the header file with all vendor-defined macros is inc/pkcs11.h.
+You can also try the end-to-end example (which consumes 1KB):
+```
+cd ../end-to-end-example
+mkdir build && cd build
+cmake ..
+make
+./get_random
+```
+
+If all tests pass and the end-to-end output looks alright, then you're good to go! The library to link to is build/libqryptoki.so, and the header file with all vendor-defined macros is inc/pkcs11.h. See the end-to-end example for some sample code.
 
 ## Documentation, support, and feedback
 
