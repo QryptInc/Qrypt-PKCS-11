@@ -1,3 +1,8 @@
+/**
+ * This class contains the global state that must be
+ * maintained by Qryptoki.
+ */
+
 #ifndef _QRYPT_WRAPPER_GLOBALDATA_H
 #define _QRYPT_WRAPPER_GLOBALDATA_H
 

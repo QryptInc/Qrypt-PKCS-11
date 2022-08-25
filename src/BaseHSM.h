@@ -1,3 +1,8 @@
+/**
+ * This class handles initializing and retrieving function pointers
+ * from the base HSM.
+ */
+
 #ifndef _QRYPT_BASEHSM_H
 #define _QRYPT_BASEHSM_H
 

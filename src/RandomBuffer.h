@@ -1,3 +1,7 @@
+/**
+ * This class stores extra random from EaaS to prevent waste.
+ */
+
 #ifndef _QRYPT_WRAPPER_RANDOMBUFFER_H
 #define _QRYPT_WRAPPER_RANDOMBUFFER_H
 
