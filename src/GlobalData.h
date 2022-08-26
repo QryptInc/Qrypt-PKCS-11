@@ -1,6 +1,8 @@
 /**
  * This class contains the global state that must be
  * maintained by Qryptoki.
+ * 
+ * Singleton design pattern: https://stackoverflow.com/a/1008289
  */
 
 #ifndef _QRYPT_WRAPPER_GLOBALDATA_H
@@ -14,8 +16,13 @@
 
 class GlobalData {
     public:
-        GlobalData();
-        ~GlobalData(){};
+        static GlobalData& getInstance() {
+            static GlobalData instance;
+            return instance;
+        }
+
+        GlobalData(GlobalData const&)     = delete;
+        void operator=(GlobalData const&) = delete;
 
         CK_RV initialize(CK_C_INITIALIZE_ARGS_PTR pInitArgs);
         CK_RV finalize();
@@ -28,6 +35,9 @@ class GlobalData {
 
         CK_RV getRandom(CK_BYTE_PTR data, CK_ULONG len);
     private:
+        GlobalData();
+        ~GlobalData(){};
+
         BaseHSM *baseHSM;
 
         // Mutex stuff

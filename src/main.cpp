@@ -53,8 +53,6 @@
 #define PKCS_API
 #endif
 
-GlobalData global;
-
 // PKCS #11 function list
 static CK_FUNCTION_LIST functionList =
 {
@@ -135,24 +133,24 @@ static CK_FUNCTION_LIST functionList =
 PKCS_API CK_RV C_Initialize(CK_VOID_PTR pInitArgs)
 {
 	try {
-		if(global.isCryptokiInitialized()) return CKR_CRYPTOKI_ALREADY_INITIALIZED;
+		if(GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_ALREADY_INITIALIZED;
 
 		// Initialize global
-		CK_RV rv = global.initialize((CK_C_INITIALIZE_ARGS_PTR)pInitArgs);
+		CK_RV rv = GlobalData::getInstance().initialize((CK_C_INITIALIZE_ARGS_PTR)pInitArgs);
 		if(rv != CKR_OK) {
-			global.finalize();
+			GlobalData::getInstance().finalize();
 			return rv;
 		}
 
 		// Initialize base HSM
-		CK_C_Initialize Base_C_Initialize = (CK_C_Initialize)global.getBaseFunction("C_Initialize");
+		CK_C_Initialize Base_C_Initialize = (CK_C_Initialize)GlobalData::getInstance().getBaseFunction("C_Initialize");
 		if(Base_C_Initialize == NULL) {
-			global.finalize();
+			GlobalData::getInstance().finalize();
 			return CKR_GENERAL_ERROR;
 		}
 
 		rv = (*Base_C_Initialize)(pInitArgs);
-		if(rv != CKR_OK) global.finalize();
+		if(rv != CKR_OK) GlobalData::getInstance().finalize();
 
 		return rv;
 	} catch (std::bad_alloc &ex) {
@@ -165,16 +163,16 @@ PKCS_API CK_RV C_Initialize(CK_VOID_PTR pInitArgs)
 PKCS_API CK_RV C_Finalize(CK_VOID_PTR pReserved)
 {
 	try {
-		if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+		if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 
-		CK_C_Finalize Base_C_Finalize = (CK_C_Finalize)global.getBaseFunction("C_Finalize");
+		CK_C_Finalize Base_C_Finalize = (CK_C_Finalize)GlobalData::getInstance().getBaseFunction("C_Finalize");
 		if(Base_C_Finalize == NULL) return CKR_GENERAL_ERROR;
 
 		CK_RV rv = (*Base_C_Finalize)(pReserved);
 
 		if(rv != CKR_OK) return rv;
 		
-		return global.finalize();
+		return GlobalData::getInstance().finalize();
 	} catch (std::bad_alloc &ex) {
 		return CKR_HOST_MEMORY;
 	} catch (...) {
@@ -185,9 +183,9 @@ PKCS_API CK_RV C_Finalize(CK_VOID_PTR pReserved)
 PKCS_API CK_RV C_GetInfo(CK_INFO_PTR pInfo)
 {
 	try {
-		if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+		if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 
-		CK_C_GetInfo Base_C_GetInfo = (CK_C_GetInfo)global.getBaseFunction("C_GetInfo");
+		CK_C_GetInfo Base_C_GetInfo = (CK_C_GetInfo)GlobalData::getInstance().getBaseFunction("C_GetInfo");
 		if(Base_C_GetInfo == NULL) return CKR_GENERAL_ERROR;
 
 		CK_RV rv = (*Base_C_GetInfo)(pInfo);
@@ -238,9 +236,9 @@ PKCS_API CK_RV C_GetFunctionList(CK_FUNCTION_LIST_PTR_PTR ppFunctionList)
 PKCS_API CK_RV C_SeedRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSeed, CK_ULONG ulSeedLen)
 {
 	try {
-		if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+		if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 
-		CK_C_SeedRandom Base_C_SeedRandom = (CK_C_SeedRandom)global.getBaseFunction("C_SeedRandom");
+		CK_C_SeedRandom Base_C_SeedRandom = (CK_C_SeedRandom)GlobalData::getInstance().getBaseFunction("C_SeedRandom");
 		if(Base_C_SeedRandom == NULL) return CKR_GENERAL_ERROR;
 
 		CK_RV rv = (*Base_C_SeedRandom)(hSession, pSeed, 0);
@@ -278,9 +276,9 @@ PKCS_API CK_RV C_SeedRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSeed, CK_UL
 PKCS_API CK_RV C_GenerateRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pRandomData, CK_ULONG ulRandomLen)
 {
 	try {
-		if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+		if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 
-		CK_C_GenerateRandom Base_C_GenerateRandom = (CK_C_GenerateRandom)global.getBaseFunction("C_GenerateRandom");
+		CK_C_GenerateRandom Base_C_GenerateRandom = (CK_C_GenerateRandom)GlobalData::getInstance().getBaseFunction("C_GenerateRandom");
 		if(Base_C_GenerateRandom == NULL) return CKR_GENERAL_ERROR;
 
 		CK_RV rv = (*Base_C_GenerateRandom)(hSession, pRandomData, 0);
@@ -306,11 +304,11 @@ PKCS_API CK_RV C_GenerateRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pRandomD
 				return rv;
 		}
 
-		rv = global.lockRandomBufferMutex();
+		rv = GlobalData::getInstance().lockRandomBufferMutex();
 		if(rv != CKR_OK) return rv;
 
 		// Get Qrypt random
-		rv = global.getRandom(pRandomData, ulRandomLen);
+		rv = GlobalData::getInstance().getRandom(pRandomData, ulRandomLen);
 		
 		const char *errorMsg;
 		if(rv == CKR_QRYPT_TOKEN_EMPTY)
@@ -324,12 +322,12 @@ PKCS_API CK_RV C_GenerateRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pRandomD
 
 		if(rv != CKR_OK) {
 			ERROR_MSG(errorMsg);
-			global.unlockRandomBufferMutex();
+			GlobalData::getInstance().unlockRandomBufferMutex();
 			return rv;
 		}
 
 		// Unlock RandomBuffer mutex;
-		rv = global.unlockRandomBufferMutex();
+		rv = GlobalData::getInstance().unlockRandomBufferMutex();
 		if(rv != CKR_OK) return rv;
 
 		INFO_MSG("Retrieved %lu bytes from Qrypt Entropy API.", ulRandomLen);
@@ -344,9 +342,9 @@ PKCS_API CK_RV C_GenerateRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pRandomD
 // Other functions (these all look the same)
 PKCS_API CK_RV C_GetSlotList(CK_BBOOL tokenPresent, CK_SLOT_ID_PTR pSlotList, CK_ULONG_PTR pulCount)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetSlotList Base_C_GetSlotList = (CK_C_GetSlotList)global.getBaseFunction("C_GetSlotList");
+	CK_C_GetSlotList Base_C_GetSlotList = (CK_C_GetSlotList)GlobalData::getInstance().getBaseFunction("C_GetSlotList");
 	if(Base_C_GetSlotList == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetSlotList)(tokenPresent, pSlotList, pulCount);
@@ -354,9 +352,9 @@ PKCS_API CK_RV C_GetSlotList(CK_BBOOL tokenPresent, CK_SLOT_ID_PTR pSlotList, CK
 
 PKCS_API CK_RV C_GetSlotInfo(CK_SLOT_ID slotID, CK_SLOT_INFO_PTR pInfo)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetSlotInfo Base_C_GetSlotInfo = (CK_C_GetSlotInfo)global.getBaseFunction("C_GetSlotInfo");
+	CK_C_GetSlotInfo Base_C_GetSlotInfo = (CK_C_GetSlotInfo)GlobalData::getInstance().getBaseFunction("C_GetSlotInfo");
 	if(Base_C_GetSlotInfo == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetSlotInfo)(slotID, pInfo);
@@ -364,9 +362,9 @@ PKCS_API CK_RV C_GetSlotInfo(CK_SLOT_ID slotID, CK_SLOT_INFO_PTR pInfo)
 
 PKCS_API CK_RV C_GetTokenInfo(CK_SLOT_ID slotID, CK_TOKEN_INFO_PTR pInfo)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetTokenInfo Base_C_GetTokenInfo = (CK_C_GetTokenInfo)global.getBaseFunction("C_GetTokenInfo");
+	CK_C_GetTokenInfo Base_C_GetTokenInfo = (CK_C_GetTokenInfo)GlobalData::getInstance().getBaseFunction("C_GetTokenInfo");
 	if(Base_C_GetTokenInfo == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetTokenInfo)(slotID, pInfo);
@@ -374,9 +372,9 @@ PKCS_API CK_RV C_GetTokenInfo(CK_SLOT_ID slotID, CK_TOKEN_INFO_PTR pInfo)
 
 PKCS_API CK_RV C_GetMechanismList(CK_SLOT_ID slotID, CK_MECHANISM_TYPE_PTR pMechanismList, CK_ULONG_PTR pulCount)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetMechanismList Base_C_GetMechanismList = (CK_C_GetMechanismList)global.getBaseFunction("C_GetMechanismList");
+	CK_C_GetMechanismList Base_C_GetMechanismList = (CK_C_GetMechanismList)GlobalData::getInstance().getBaseFunction("C_GetMechanismList");
 	if(Base_C_GetMechanismList == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetMechanismList)(slotID, pMechanismList, pulCount);
@@ -384,9 +382,9 @@ PKCS_API CK_RV C_GetMechanismList(CK_SLOT_ID slotID, CK_MECHANISM_TYPE_PTR pMech
 
 PKCS_API CK_RV C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type, CK_MECHANISM_INFO_PTR pInfo)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetMechanismInfo Base_C_GetMechanismInfo = (CK_C_GetMechanismInfo)global.getBaseFunction("C_GetMechanismInfo");
+	CK_C_GetMechanismInfo Base_C_GetMechanismInfo = (CK_C_GetMechanismInfo)GlobalData::getInstance().getBaseFunction("C_GetMechanismInfo");
 	if(Base_C_GetMechanismInfo == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetMechanismInfo)(slotID, type, pInfo);
@@ -394,9 +392,9 @@ PKCS_API CK_RV C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type, CK_
 
 PKCS_API CK_RV C_InitToken(CK_SLOT_ID slotID, CK_UTF8CHAR_PTR pPin, CK_ULONG ulPinLen, CK_UTF8CHAR_PTR pLabel)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_InitToken Base_C_InitToken = (CK_C_InitToken)global.getBaseFunction("C_InitToken");
+	CK_C_InitToken Base_C_InitToken = (CK_C_InitToken)GlobalData::getInstance().getBaseFunction("C_InitToken");
 	if(Base_C_InitToken == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_InitToken)(slotID, pPin, ulPinLen, pLabel);
@@ -404,9 +402,9 @@ PKCS_API CK_RV C_InitToken(CK_SLOT_ID slotID, CK_UTF8CHAR_PTR pPin, CK_ULONG ulP
 
 PKCS_API CK_RV C_InitPIN(CK_SESSION_HANDLE hSession, CK_UTF8CHAR_PTR pPin, CK_ULONG ulPinLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_InitPIN Base_C_InitPIN = (CK_C_InitPIN)global.getBaseFunction("C_InitPIN");
+	CK_C_InitPIN Base_C_InitPIN = (CK_C_InitPIN)GlobalData::getInstance().getBaseFunction("C_InitPIN");
 	if(Base_C_InitPIN == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_InitPIN)(hSession, pPin, ulPinLen);
@@ -414,9 +412,9 @@ PKCS_API CK_RV C_InitPIN(CK_SESSION_HANDLE hSession, CK_UTF8CHAR_PTR pPin, CK_UL
 
 PKCS_API CK_RV C_SetPIN(CK_SESSION_HANDLE hSession, CK_UTF8CHAR_PTR pOldPin, CK_ULONG ulOldLen, CK_UTF8CHAR_PTR pNewPin, CK_ULONG ulNewLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SetPIN Base_C_SetPIN = (CK_C_SetPIN)global.getBaseFunction("C_SetPIN");
+	CK_C_SetPIN Base_C_SetPIN = (CK_C_SetPIN)GlobalData::getInstance().getBaseFunction("C_SetPIN");
 	if(Base_C_SetPIN == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SetPIN)(hSession, pOldPin, ulOldLen, pNewPin, ulNewLen);
@@ -424,9 +422,9 @@ PKCS_API CK_RV C_SetPIN(CK_SESSION_HANDLE hSession, CK_UTF8CHAR_PTR pOldPin, CK_
 
 PKCS_API CK_RV C_OpenSession(CK_SLOT_ID slotID, CK_FLAGS flags, CK_VOID_PTR pApplication, CK_NOTIFY notify, CK_SESSION_HANDLE_PTR phSession)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_OpenSession Base_C_OpenSession = (CK_C_OpenSession)global.getBaseFunction("C_OpenSession");
+	CK_C_OpenSession Base_C_OpenSession = (CK_C_OpenSession)GlobalData::getInstance().getBaseFunction("C_OpenSession");
 	if(Base_C_OpenSession == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_OpenSession)(slotID, flags, pApplication, notify, phSession);
@@ -434,9 +432,9 @@ PKCS_API CK_RV C_OpenSession(CK_SLOT_ID slotID, CK_FLAGS flags, CK_VOID_PTR pApp
 
 PKCS_API CK_RV C_CloseSession(CK_SESSION_HANDLE hSession)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_CloseSession Base_C_CloseSession = (CK_C_CloseSession)global.getBaseFunction("C_CloseSession");
+	CK_C_CloseSession Base_C_CloseSession = (CK_C_CloseSession)GlobalData::getInstance().getBaseFunction("C_CloseSession");
 	if(Base_C_CloseSession == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_CloseSession)(hSession);
@@ -444,9 +442,9 @@ PKCS_API CK_RV C_CloseSession(CK_SESSION_HANDLE hSession)
 
 PKCS_API CK_RV C_CloseAllSessions(CK_SLOT_ID slotID)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_CloseAllSessions Base_C_CloseAllSessions = (CK_C_CloseAllSessions)global.getBaseFunction("C_CloseAllSessions");
+	CK_C_CloseAllSessions Base_C_CloseAllSessions = (CK_C_CloseAllSessions)GlobalData::getInstance().getBaseFunction("C_CloseAllSessions");
 	if(Base_C_CloseAllSessions == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_CloseAllSessions)(slotID);
@@ -454,9 +452,9 @@ PKCS_API CK_RV C_CloseAllSessions(CK_SLOT_ID slotID)
 
 PKCS_API CK_RV C_GetSessionInfo(CK_SESSION_HANDLE hSession, CK_SESSION_INFO_PTR pInfo)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetSessionInfo Base_C_GetSessionInfo = (CK_C_GetSessionInfo)global.getBaseFunction("C_GetSessionInfo");
+	CK_C_GetSessionInfo Base_C_GetSessionInfo = (CK_C_GetSessionInfo)GlobalData::getInstance().getBaseFunction("C_GetSessionInfo");
 	if(Base_C_GetSessionInfo == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetSessionInfo)(hSession, pInfo);
@@ -464,9 +462,9 @@ PKCS_API CK_RV C_GetSessionInfo(CK_SESSION_HANDLE hSession, CK_SESSION_INFO_PTR 
 
 PKCS_API CK_RV C_GetOperationState(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pOperationState, CK_ULONG_PTR pulOperationStateLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetOperationState Base_C_GetOperationState = (CK_C_GetOperationState)global.getBaseFunction("C_GetOperationState");
+	CK_C_GetOperationState Base_C_GetOperationState = (CK_C_GetOperationState)GlobalData::getInstance().getBaseFunction("C_GetOperationState");
 	if(Base_C_GetOperationState == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetOperationState)(hSession, pOperationState, pulOperationStateLen);
@@ -474,9 +472,9 @@ PKCS_API CK_RV C_GetOperationState(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pOper
 
 PKCS_API CK_RV C_SetOperationState(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pOperationState, CK_ULONG ulOperationStateLen, CK_OBJECT_HANDLE hEncryptionKey, CK_OBJECT_HANDLE hAuthenticationKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SetOperationState Base_C_SetOperationState = (CK_C_SetOperationState)global.getBaseFunction("C_SetOperationState");
+	CK_C_SetOperationState Base_C_SetOperationState = (CK_C_SetOperationState)GlobalData::getInstance().getBaseFunction("C_SetOperationState");
 	if(Base_C_SetOperationState == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SetOperationState)(hSession, pOperationState, ulOperationStateLen, hEncryptionKey, hAuthenticationKey);
@@ -484,9 +482,9 @@ PKCS_API CK_RV C_SetOperationState(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pOper
 
 PKCS_API CK_RV C_Login(CK_SESSION_HANDLE hSession, CK_USER_TYPE userType, CK_UTF8CHAR_PTR pPin, CK_ULONG ulPinLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Login Base_C_Login = (CK_C_Login)global.getBaseFunction("C_Login");
+	CK_C_Login Base_C_Login = (CK_C_Login)GlobalData::getInstance().getBaseFunction("C_Login");
 	if(Base_C_Login == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Login)(hSession, userType, pPin, ulPinLen);
@@ -494,9 +492,9 @@ PKCS_API CK_RV C_Login(CK_SESSION_HANDLE hSession, CK_USER_TYPE userType, CK_UTF
 
 PKCS_API CK_RV C_Logout(CK_SESSION_HANDLE hSession)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Logout Base_C_Logout = (CK_C_Logout)global.getBaseFunction("C_Logout");
+	CK_C_Logout Base_C_Logout = (CK_C_Logout)GlobalData::getInstance().getBaseFunction("C_Logout");
 	if(Base_C_Logout == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Logout)(hSession);
@@ -504,9 +502,9 @@ PKCS_API CK_RV C_Logout(CK_SESSION_HANDLE hSession)
 
 PKCS_API CK_RV C_CreateObject(CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount, CK_OBJECT_HANDLE_PTR phObject)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_CreateObject Base_C_CreateObject = (CK_C_CreateObject)global.getBaseFunction("C_CreateObject");
+	CK_C_CreateObject Base_C_CreateObject = (CK_C_CreateObject)GlobalData::getInstance().getBaseFunction("C_CreateObject");
 	if(Base_C_CreateObject == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_CreateObject)(hSession, pTemplate, ulCount, phObject);
@@ -514,9 +512,9 @@ PKCS_API CK_RV C_CreateObject(CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pTemp
 
 PKCS_API CK_RV C_CopyObject(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount, CK_OBJECT_HANDLE_PTR phNewObject)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_CopyObject Base_C_CopyObject = (CK_C_CopyObject)global.getBaseFunction("C_CopyObject");
+	CK_C_CopyObject Base_C_CopyObject = (CK_C_CopyObject)GlobalData::getInstance().getBaseFunction("C_CopyObject");
 	if(Base_C_CopyObject == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_CopyObject)(hSession, hObject, pTemplate, ulCount, phNewObject);
@@ -524,9 +522,9 @@ PKCS_API CK_RV C_CopyObject(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject
 
 PKCS_API CK_RV C_DestroyObject(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DestroyObject Base_C_DestroyObject = (CK_C_DestroyObject)global.getBaseFunction("C_DestroyObject");
+	CK_C_DestroyObject Base_C_DestroyObject = (CK_C_DestroyObject)GlobalData::getInstance().getBaseFunction("C_DestroyObject");
 	if(Base_C_DestroyObject == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DestroyObject)(hSession, hObject);
@@ -534,9 +532,9 @@ PKCS_API CK_RV C_DestroyObject(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObj
 
 PKCS_API CK_RV C_GetObjectSize(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject, CK_ULONG_PTR pulSize)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetObjectSize Base_C_GetObjectSize = (CK_C_GetObjectSize)global.getBaseFunction("C_GetObjectSize");
+	CK_C_GetObjectSize Base_C_GetObjectSize = (CK_C_GetObjectSize)GlobalData::getInstance().getBaseFunction("C_GetObjectSize");
 	if(Base_C_GetObjectSize == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetObjectSize)(hSession, hObject, pulSize);
@@ -544,9 +542,9 @@ PKCS_API CK_RV C_GetObjectSize(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObj
 
 PKCS_API CK_RV C_GetAttributeValue(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetAttributeValue Base_C_GetAttributeValue = (CK_C_GetAttributeValue)global.getBaseFunction("C_GetAttributeValue");
+	CK_C_GetAttributeValue Base_C_GetAttributeValue = (CK_C_GetAttributeValue)GlobalData::getInstance().getBaseFunction("C_GetAttributeValue");
 	if(Base_C_GetAttributeValue == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetAttributeValue)(hSession, hObject, pTemplate, ulCount);
@@ -554,9 +552,9 @@ PKCS_API CK_RV C_GetAttributeValue(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE 
 
 PKCS_API CK_RV C_SetAttributeValue(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SetAttributeValue Base_C_SetAttributeValue = (CK_C_SetAttributeValue)global.getBaseFunction("C_SetAttributeValue");
+	CK_C_SetAttributeValue Base_C_SetAttributeValue = (CK_C_SetAttributeValue)GlobalData::getInstance().getBaseFunction("C_SetAttributeValue");
 	if(Base_C_SetAttributeValue == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SetAttributeValue)(hSession, hObject, pTemplate, ulCount);
@@ -564,9 +562,9 @@ PKCS_API CK_RV C_SetAttributeValue(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE 
 
 PKCS_API CK_RV C_FindObjectsInit(CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_FindObjectsInit Base_C_FindObjectsInit = (CK_C_FindObjectsInit)global.getBaseFunction("C_FindObjectsInit");
+	CK_C_FindObjectsInit Base_C_FindObjectsInit = (CK_C_FindObjectsInit)GlobalData::getInstance().getBaseFunction("C_FindObjectsInit");
 	if(Base_C_FindObjectsInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_FindObjectsInit)(hSession, pTemplate, ulCount);
@@ -574,9 +572,9 @@ PKCS_API CK_RV C_FindObjectsInit(CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pT
 
 PKCS_API CK_RV C_FindObjects(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE_PTR phObject, CK_ULONG ulMaxObjectCount, CK_ULONG_PTR pulObjectCount)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_FindObjects Base_C_FindObjects = (CK_C_FindObjects)global.getBaseFunction("C_FindObjects");
+	CK_C_FindObjects Base_C_FindObjects = (CK_C_FindObjects)GlobalData::getInstance().getBaseFunction("C_FindObjects");
 	if(Base_C_FindObjects == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_FindObjects)(hSession, phObject, ulMaxObjectCount, pulObjectCount);
@@ -584,9 +582,9 @@ PKCS_API CK_RV C_FindObjects(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE_PTR ph
 
 PKCS_API CK_RV C_FindObjectsFinal(CK_SESSION_HANDLE hSession)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_FindObjectsFinal Base_C_FindObjectsFinal = (CK_C_FindObjectsFinal)global.getBaseFunction("C_FindObjectsFinal");
+	CK_C_FindObjectsFinal Base_C_FindObjectsFinal = (CK_C_FindObjectsFinal)GlobalData::getInstance().getBaseFunction("C_FindObjectsFinal");
 	if(Base_C_FindObjectsFinal == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_FindObjectsFinal)(hSession);
@@ -594,9 +592,9 @@ PKCS_API CK_RV C_FindObjectsFinal(CK_SESSION_HANDLE hSession)
 
 PKCS_API CK_RV C_EncryptInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hObject)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_EncryptInit Base_C_EncryptInit = (CK_C_EncryptInit)global.getBaseFunction("C_EncryptInit");
+	CK_C_EncryptInit Base_C_EncryptInit = (CK_C_EncryptInit)GlobalData::getInstance().getBaseFunction("C_EncryptInit");
 	if(Base_C_EncryptInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_EncryptInit)(hSession, pMechanism, hObject);
@@ -604,9 +602,9 @@ PKCS_API CK_RV C_EncryptInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMecha
 
 PKCS_API CK_RV C_Encrypt(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ulDataLen, CK_BYTE_PTR pEncryptedData, CK_ULONG_PTR pulEncryptedDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Encrypt Base_C_Encrypt = (CK_C_Encrypt)global.getBaseFunction("C_Encrypt");
+	CK_C_Encrypt Base_C_Encrypt = (CK_C_Encrypt)GlobalData::getInstance().getBaseFunction("C_Encrypt");
 	if(Base_C_Encrypt == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Encrypt)(hSession, pData, ulDataLen, pEncryptedData, pulEncryptedDataLen);
@@ -614,9 +612,9 @@ PKCS_API CK_RV C_Encrypt(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG
 
 PKCS_API CK_RV C_EncryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ulDataLen, CK_BYTE_PTR pEncryptedData, CK_ULONG_PTR pulEncryptedDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_EncryptUpdate Base_C_EncryptUpdate = (CK_C_EncryptUpdate)global.getBaseFunction("C_EncryptUpdate");
+	CK_C_EncryptUpdate Base_C_EncryptUpdate = (CK_C_EncryptUpdate)GlobalData::getInstance().getBaseFunction("C_EncryptUpdate");
 	if(Base_C_EncryptUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_EncryptUpdate)(hSession, pData, ulDataLen, pEncryptedData, pulEncryptedDataLen);
@@ -624,9 +622,9 @@ PKCS_API CK_RV C_EncryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK
 
 PKCS_API CK_RV C_EncryptFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncryptedData, CK_ULONG_PTR pulEncryptedDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_EncryptFinal Base_C_EncryptFinal = (CK_C_EncryptFinal)global.getBaseFunction("C_EncryptFinal");
+	CK_C_EncryptFinal Base_C_EncryptFinal = (CK_C_EncryptFinal)GlobalData::getInstance().getBaseFunction("C_EncryptFinal");
 	if(Base_C_EncryptFinal == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_EncryptFinal)(hSession, pEncryptedData, pulEncryptedDataLen);
@@ -634,9 +632,9 @@ PKCS_API CK_RV C_EncryptFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncrypted
 
 PKCS_API CK_RV C_DecryptInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hObject)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DecryptInit Base_C_DecryptInit = (CK_C_DecryptInit)global.getBaseFunction("C_DecryptInit");
+	CK_C_DecryptInit Base_C_DecryptInit = (CK_C_DecryptInit)GlobalData::getInstance().getBaseFunction("C_DecryptInit");
 	if(Base_C_DecryptInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DecryptInit)(hSession, pMechanism, hObject);
@@ -644,9 +642,9 @@ PKCS_API CK_RV C_DecryptInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMecha
 
 PKCS_API CK_RV C_Decrypt(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncryptedData, CK_ULONG ulEncryptedDataLen, CK_BYTE_PTR pData, CK_ULONG_PTR pulDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Decrypt Base_C_Decrypt = (CK_C_Decrypt)global.getBaseFunction("C_Decrypt");
+	CK_C_Decrypt Base_C_Decrypt = (CK_C_Decrypt)GlobalData::getInstance().getBaseFunction("C_Decrypt");
 	if(Base_C_Decrypt == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Decrypt)(hSession, pEncryptedData, ulEncryptedDataLen, pData, pulDataLen);
@@ -654,9 +652,9 @@ PKCS_API CK_RV C_Decrypt(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncryptedData,
 
 PKCS_API CK_RV C_DecryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncryptedData, CK_ULONG ulEncryptedDataLen, CK_BYTE_PTR pData, CK_ULONG_PTR pDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DecryptUpdate Base_C_DecryptUpdate = (CK_C_DecryptUpdate)global.getBaseFunction("C_DecryptUpdate");
+	CK_C_DecryptUpdate Base_C_DecryptUpdate = (CK_C_DecryptUpdate)GlobalData::getInstance().getBaseFunction("C_DecryptUpdate");
 	if(Base_C_DecryptUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DecryptUpdate)(hSession, pEncryptedData, ulEncryptedDataLen, pData, pDataLen);
@@ -664,9 +662,9 @@ PKCS_API CK_RV C_DecryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncrypte
 
 PKCS_API CK_RV C_DecryptFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG_PTR pDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DecryptFinal Base_C_DecryptFinal = (CK_C_DecryptFinal)global.getBaseFunction("C_DecryptFinal");
+	CK_C_DecryptFinal Base_C_DecryptFinal = (CK_C_DecryptFinal)GlobalData::getInstance().getBaseFunction("C_DecryptFinal");
 	if(Base_C_DecryptFinal == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DecryptFinal)(hSession, pData, pDataLen);
@@ -674,9 +672,9 @@ PKCS_API CK_RV C_DecryptFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_
 
 PKCS_API CK_RV C_DigestInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DigestInit Base_C_DigestInit = (CK_C_DigestInit)global.getBaseFunction("C_DigestInit");
+	CK_C_DigestInit Base_C_DigestInit = (CK_C_DigestInit)GlobalData::getInstance().getBaseFunction("C_DigestInit");
 	if(Base_C_DigestInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DigestInit)(hSession, pMechanism);
@@ -684,9 +682,9 @@ PKCS_API CK_RV C_DigestInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechan
 
 PKCS_API CK_RV C_Digest(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ulDataLen, CK_BYTE_PTR pDigest, CK_ULONG_PTR pulDigestLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Digest Base_C_Digest = (CK_C_Digest)global.getBaseFunction("C_Digest");
+	CK_C_Digest Base_C_Digest = (CK_C_Digest)GlobalData::getInstance().getBaseFunction("C_Digest");
 	if(Base_C_Digest == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Digest)(hSession, pData, ulDataLen, pDigest, pulDigestLen);
@@ -694,9 +692,9 @@ PKCS_API CK_RV C_Digest(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG 
 
 PKCS_API CK_RV C_DigestUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_ULONG ulPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DigestUpdate Base_C_DigestUpdate = (CK_C_DigestUpdate)global.getBaseFunction("C_DigestUpdate");
+	CK_C_DigestUpdate Base_C_DigestUpdate = (CK_C_DigestUpdate)GlobalData::getInstance().getBaseFunction("C_DigestUpdate");
 	if(Base_C_DigestUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DigestUpdate)(hSession, pPart, ulPartLen);
@@ -704,9 +702,9 @@ PKCS_API CK_RV C_DigestUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_
 
 PKCS_API CK_RV C_DigestKey(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DigestKey Base_C_DigestKey = (CK_C_DigestKey)global.getBaseFunction("C_DigestKey");
+	CK_C_DigestKey Base_C_DigestKey = (CK_C_DigestKey)GlobalData::getInstance().getBaseFunction("C_DigestKey");
 	if(Base_C_DigestKey == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DigestKey)(hSession, hObject);
@@ -714,9 +712,9 @@ PKCS_API CK_RV C_DigestKey(CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hObject)
 
 PKCS_API CK_RV C_DigestFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pDigest, CK_ULONG_PTR pulDigestLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DigestFinal Base_C_DigestFinal = (CK_C_DigestFinal)global.getBaseFunction("C_DigestFinal");
+	CK_C_DigestFinal Base_C_DigestFinal = (CK_C_DigestFinal)GlobalData::getInstance().getBaseFunction("C_DigestFinal");
 	if(Base_C_DigestFinal == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DigestFinal)(hSession, pDigest, pulDigestLen);
@@ -724,9 +722,9 @@ PKCS_API CK_RV C_DigestFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pDigest, CK
 
 PKCS_API CK_RV C_SignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SignInit Base_C_SignInit = (CK_C_SignInit)global.getBaseFunction("C_SignInit");
+	CK_C_SignInit Base_C_SignInit = (CK_C_SignInit)GlobalData::getInstance().getBaseFunction("C_SignInit");
 	if(Base_C_SignInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SignInit)(hSession, pMechanism, hKey);
@@ -734,9 +732,9 @@ PKCS_API CK_RV C_SignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanis
 
 PKCS_API CK_RV C_Sign(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ulDataLen, CK_BYTE_PTR pSignature, CK_ULONG_PTR pulSignatureLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Sign Base_C_Sign = (CK_C_Sign)global.getBaseFunction("C_Sign");
+	CK_C_Sign Base_C_Sign = (CK_C_Sign)GlobalData::getInstance().getBaseFunction("C_Sign");
 	if(Base_C_Sign == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Sign)(hSession, pData, ulDataLen, pSignature, pulSignatureLen);
@@ -744,9 +742,9 @@ PKCS_API CK_RV C_Sign(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ul
 
 PKCS_API CK_RV C_SignUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_ULONG ulPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SignUpdate Base_C_SignUpdate = (CK_C_SignUpdate)global.getBaseFunction("C_SignUpdate");
+	CK_C_SignUpdate Base_C_SignUpdate = (CK_C_SignUpdate)GlobalData::getInstance().getBaseFunction("C_SignUpdate");
 	if(Base_C_SignUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SignUpdate)(hSession, pPart, ulPartLen);
@@ -754,9 +752,9 @@ PKCS_API CK_RV C_SignUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_UL
 
 PKCS_API CK_RV C_SignFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature, CK_ULONG_PTR pulSignatureLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SignFinal Base_C_SignFinal = (CK_C_SignFinal)global.getBaseFunction("C_SignFinal");
+	CK_C_SignFinal Base_C_SignFinal = (CK_C_SignFinal)GlobalData::getInstance().getBaseFunction("C_SignFinal");
 	if(Base_C_SignFinal == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SignFinal)(hSession, pSignature, pulSignatureLen);
@@ -764,9 +762,9 @@ PKCS_API CK_RV C_SignFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature, C
 
 PKCS_API CK_RV C_SignRecoverInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SignRecoverInit Base_C_SignRecoverInit = (CK_C_SignRecoverInit)global.getBaseFunction("C_SignRecoverInit");
+	CK_C_SignRecoverInit Base_C_SignRecoverInit = (CK_C_SignRecoverInit)GlobalData::getInstance().getBaseFunction("C_SignRecoverInit");
 	if(Base_C_SignRecoverInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SignRecoverInit)(hSession, pMechanism, hKey);
@@ -774,9 +772,9 @@ PKCS_API CK_RV C_SignRecoverInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pM
 
 PKCS_API CK_RV C_SignRecover(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ulDataLen, CK_BYTE_PTR pSignature, CK_ULONG_PTR pulSignatureLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SignRecover Base_C_SignRecover = (CK_C_SignRecover)global.getBaseFunction("C_SignRecover");
+	CK_C_SignRecover Base_C_SignRecover = (CK_C_SignRecover)GlobalData::getInstance().getBaseFunction("C_SignRecover");
 	if(Base_C_SignRecover == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SignRecover)(hSession, pData, ulDataLen, pSignature, pulSignatureLen);
@@ -784,9 +782,9 @@ PKCS_API CK_RV C_SignRecover(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_U
 
 PKCS_API CK_RV C_VerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_VerifyInit Base_C_VerifyInit = (CK_C_VerifyInit)global.getBaseFunction("C_VerifyInit");
+	CK_C_VerifyInit Base_C_VerifyInit = (CK_C_VerifyInit)GlobalData::getInstance().getBaseFunction("C_VerifyInit");
 	if(Base_C_VerifyInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_VerifyInit)(hSession, pMechanism, hKey);
@@ -794,9 +792,9 @@ PKCS_API CK_RV C_VerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechan
 
 PKCS_API CK_RV C_Verify(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG ulDataLen, CK_BYTE_PTR pSignature, CK_ULONG ulSignatureLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_Verify Base_C_Verify = (CK_C_Verify)global.getBaseFunction("C_Verify");
+	CK_C_Verify Base_C_Verify = (CK_C_Verify)GlobalData::getInstance().getBaseFunction("C_Verify");
 	if(Base_C_Verify == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_Verify)(hSession, pData, ulDataLen, pSignature, ulSignatureLen);
@@ -804,9 +802,9 @@ PKCS_API CK_RV C_Verify(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pData, CK_ULONG 
 
 PKCS_API CK_RV C_VerifyUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_ULONG ulPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_VerifyUpdate Base_C_VerifyUpdate = (CK_C_VerifyUpdate)global.getBaseFunction("C_VerifyUpdate");
+	CK_C_VerifyUpdate Base_C_VerifyUpdate = (CK_C_VerifyUpdate)GlobalData::getInstance().getBaseFunction("C_VerifyUpdate");
 	if(Base_C_VerifyUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_VerifyUpdate)(hSession, pPart, ulPartLen);
@@ -814,9 +812,9 @@ PKCS_API CK_RV C_VerifyUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_
 
 PKCS_API CK_RV C_VerifyFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature, CK_ULONG ulSignatureLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_VerifyFinal Base_C_VerifyFinal = (CK_C_VerifyFinal)global.getBaseFunction("C_VerifyFinal");
+	CK_C_VerifyFinal Base_C_VerifyFinal = (CK_C_VerifyFinal)GlobalData::getInstance().getBaseFunction("C_VerifyFinal");
 	if(Base_C_VerifyFinal == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_VerifyFinal)(hSession, pSignature, ulSignatureLen);
@@ -824,9 +822,9 @@ PKCS_API CK_RV C_VerifyFinal(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature,
 
 PKCS_API CK_RV C_VerifyRecoverInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_VerifyRecoverInit Base_C_VerifyRecoverInit = (CK_C_VerifyRecoverInit)global.getBaseFunction("C_VerifyRecoverInit");
+	CK_C_VerifyRecoverInit Base_C_VerifyRecoverInit = (CK_C_VerifyRecoverInit)GlobalData::getInstance().getBaseFunction("C_VerifyRecoverInit");
 	if(Base_C_VerifyRecoverInit == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_VerifyRecoverInit)(hSession, pMechanism, hKey);
@@ -834,9 +832,9 @@ PKCS_API CK_RV C_VerifyRecoverInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR 
 
 PKCS_API CK_RV C_VerifyRecover(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignature, CK_ULONG ulSignatureLen, CK_BYTE_PTR pData, CK_ULONG_PTR pulDataLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_VerifyRecover Base_C_VerifyRecover = (CK_C_VerifyRecover)global.getBaseFunction("C_VerifyRecover");
+	CK_C_VerifyRecover Base_C_VerifyRecover = (CK_C_VerifyRecover)GlobalData::getInstance().getBaseFunction("C_VerifyRecover");
 	if(Base_C_VerifyRecover == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_VerifyRecover)(hSession, pSignature, ulSignatureLen, pData, pulDataLen);
@@ -844,9 +842,9 @@ PKCS_API CK_RV C_VerifyRecover(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pSignatur
 
 PKCS_API CK_RV C_DigestEncryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_ULONG ulPartLen, CK_BYTE_PTR pEncryptedPart, CK_ULONG_PTR pulEncryptedPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DigestEncryptUpdate Base_C_DigestEncryptUpdate = (CK_C_DigestEncryptUpdate)global.getBaseFunction("C_DigestEncryptUpdate");
+	CK_C_DigestEncryptUpdate Base_C_DigestEncryptUpdate = (CK_C_DigestEncryptUpdate)GlobalData::getInstance().getBaseFunction("C_DigestEncryptUpdate");
 	if(Base_C_DigestEncryptUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DigestEncryptUpdate)(hSession, pPart, ulPartLen, pEncryptedPart, pulEncryptedPartLen);
@@ -854,9 +852,9 @@ PKCS_API CK_RV C_DigestEncryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPa
 
 PKCS_API CK_RV C_DecryptDigestUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_ULONG ulPartLen, CK_BYTE_PTR pDecryptedPart, CK_ULONG_PTR pulDecryptedPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DecryptDigestUpdate Base_C_DecryptDigestUpdate = (CK_C_DecryptDigestUpdate)global.getBaseFunction("C_DecryptDigestUpdate");
+	CK_C_DecryptDigestUpdate Base_C_DecryptDigestUpdate = (CK_C_DecryptDigestUpdate)GlobalData::getInstance().getBaseFunction("C_DecryptDigestUpdate");
 	if(Base_C_DecryptDigestUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DecryptDigestUpdate)(hSession, pPart, ulPartLen, pDecryptedPart, pulDecryptedPartLen);
@@ -864,9 +862,9 @@ PKCS_API CK_RV C_DecryptDigestUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPa
 
 PKCS_API CK_RV C_SignEncryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart, CK_ULONG ulPartLen, CK_BYTE_PTR pEncryptedPart, CK_ULONG_PTR pulEncryptedPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_SignEncryptUpdate Base_C_SignEncryptUpdate = (CK_C_SignEncryptUpdate)global.getBaseFunction("C_SignEncryptUpdate");
+	CK_C_SignEncryptUpdate Base_C_SignEncryptUpdate = (CK_C_SignEncryptUpdate)GlobalData::getInstance().getBaseFunction("C_SignEncryptUpdate");
 	if(Base_C_SignEncryptUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_SignEncryptUpdate)(hSession, pPart, ulPartLen, pEncryptedPart, pulEncryptedPartLen);
@@ -874,9 +872,9 @@ PKCS_API CK_RV C_SignEncryptUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pPart
 
 PKCS_API CK_RV C_DecryptVerifyUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEncryptedPart, CK_ULONG ulEncryptedPartLen, CK_BYTE_PTR pPart, CK_ULONG_PTR pulPartLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DecryptVerifyUpdate Base_C_DecryptVerifyUpdate = (CK_C_DecryptVerifyUpdate)global.getBaseFunction("C_DecryptVerifyUpdate");
+	CK_C_DecryptVerifyUpdate Base_C_DecryptVerifyUpdate = (CK_C_DecryptVerifyUpdate)GlobalData::getInstance().getBaseFunction("C_DecryptVerifyUpdate");
 	if(Base_C_DecryptVerifyUpdate == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DecryptVerifyUpdate)(hSession, pEncryptedPart, ulEncryptedPartLen, pPart, pulPartLen);
@@ -884,9 +882,9 @@ PKCS_API CK_RV C_DecryptVerifyUpdate(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pEn
 
 PKCS_API CK_RV C_GenerateKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount, CK_OBJECT_HANDLE_PTR phKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GenerateKey Base_C_GenerateKey = (CK_C_GenerateKey)global.getBaseFunction("C_GenerateKey");
+	CK_C_GenerateKey Base_C_GenerateKey = (CK_C_GenerateKey)GlobalData::getInstance().getBaseFunction("C_GenerateKey");
 	if(Base_C_GenerateKey == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GenerateKey)(hSession, pMechanism, pTemplate, ulCount, phKey);
@@ -894,9 +892,9 @@ PKCS_API CK_RV C_GenerateKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMecha
 
 PKCS_API CK_RV C_GenerateKeyPair(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_ATTRIBUTE_PTR pPublicKeyTemplate, CK_ULONG ulPublicKeyAttributeCount, CK_ATTRIBUTE_PTR pPrivateKeyTemplate, CK_ULONG ulPrivateKeyAttributeCount, CK_OBJECT_HANDLE_PTR phPublicKey, CK_OBJECT_HANDLE_PTR phPrivateKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GenerateKeyPair Base_C_GenerateKeyPair = (CK_C_GenerateKeyPair)global.getBaseFunction("C_GenerateKeyPair");
+	CK_C_GenerateKeyPair Base_C_GenerateKeyPair = (CK_C_GenerateKeyPair)GlobalData::getInstance().getBaseFunction("C_GenerateKeyPair");
 	if(Base_C_GenerateKeyPair == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GenerateKeyPair)(hSession, pMechanism, pPublicKeyTemplate, ulPublicKeyAttributeCount, pPrivateKeyTemplate, ulPrivateKeyAttributeCount, phPublicKey, phPrivateKey);
@@ -904,9 +902,9 @@ PKCS_API CK_RV C_GenerateKeyPair(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pM
 
 PKCS_API CK_RV C_WrapKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hWrappingKey, CK_OBJECT_HANDLE hKey, CK_BYTE_PTR pWrappedKey, CK_ULONG_PTR pulWrappedKeyLen)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_WrapKey Base_C_WrapKey = (CK_C_WrapKey)global.getBaseFunction("C_WrapKey");
+	CK_C_WrapKey Base_C_WrapKey = (CK_C_WrapKey)GlobalData::getInstance().getBaseFunction("C_WrapKey");
 	if(Base_C_WrapKey == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_WrapKey)(hSession, pMechanism, hWrappingKey, hKey, pWrappedKey, pulWrappedKeyLen);
@@ -914,9 +912,9 @@ PKCS_API CK_RV C_WrapKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism
 
 PKCS_API CK_RV C_UnwrapKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hUnwrappingKey, CK_BYTE_PTR pWrappedKey, CK_ULONG ulWrappedKeyLen, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount, CK_OBJECT_HANDLE_PTR phKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_UnwrapKey Base_C_UnwrapKey = (CK_C_UnwrapKey)global.getBaseFunction("C_UnwrapKey");
+	CK_C_UnwrapKey Base_C_UnwrapKey = (CK_C_UnwrapKey)GlobalData::getInstance().getBaseFunction("C_UnwrapKey");
 	if(Base_C_UnwrapKey == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_UnwrapKey)(hSession, pMechanism, hUnwrappingKey, pWrappedKey, ulWrappedKeyLen, pTemplate, ulCount, phKey);
@@ -924,9 +922,9 @@ PKCS_API CK_RV C_UnwrapKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechani
 
 PKCS_API CK_RV C_DeriveKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechanism, CK_OBJECT_HANDLE hBaseKey, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulCount, CK_OBJECT_HANDLE_PTR phKey)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_DeriveKey Base_C_DeriveKey = (CK_C_DeriveKey)global.getBaseFunction("C_DeriveKey");
+	CK_C_DeriveKey Base_C_DeriveKey = (CK_C_DeriveKey)GlobalData::getInstance().getBaseFunction("C_DeriveKey");
 	if(Base_C_DeriveKey == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_DeriveKey)(hSession, pMechanism, hBaseKey, pTemplate, ulCount, phKey);
@@ -934,9 +932,9 @@ PKCS_API CK_RV C_DeriveKey(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechani
 
 PKCS_API CK_RV C_GetFunctionStatus(CK_SESSION_HANDLE hSession)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_GetFunctionStatus Base_C_GetFunctionStatus = (CK_C_GetFunctionStatus)global.getBaseFunction("C_GetFunctionStatus");
+	CK_C_GetFunctionStatus Base_C_GetFunctionStatus = (CK_C_GetFunctionStatus)GlobalData::getInstance().getBaseFunction("C_GetFunctionStatus");
 	if(Base_C_GetFunctionStatus == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_GetFunctionStatus)(hSession);
@@ -944,9 +942,9 @@ PKCS_API CK_RV C_GetFunctionStatus(CK_SESSION_HANDLE hSession)
 
 PKCS_API CK_RV C_CancelFunction(CK_SESSION_HANDLE hSession)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_CancelFunction Base_C_CancelFunction = (CK_C_CancelFunction)global.getBaseFunction("C_CancelFunction");
+	CK_C_CancelFunction Base_C_CancelFunction = (CK_C_CancelFunction)GlobalData::getInstance().getBaseFunction("C_CancelFunction");
 	if(Base_C_CancelFunction == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_CancelFunction)(hSession);
@@ -954,9 +952,9 @@ PKCS_API CK_RV C_CancelFunction(CK_SESSION_HANDLE hSession)
 
 PKCS_API CK_RV C_WaitForSlotEvent(CK_FLAGS flags, CK_SLOT_ID_PTR pSlot, CK_VOID_PTR pReserved)
 {
-	if(!global.isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
+	if(!GlobalData::getInstance().isCryptokiInitialized()) return CKR_CRYPTOKI_NOT_INITIALIZED;
 	
-	CK_C_WaitForSlotEvent Base_C_WaitForSlotEvent = (CK_C_WaitForSlotEvent)global.getBaseFunction("C_WaitForSlotEvent");
+	CK_C_WaitForSlotEvent Base_C_WaitForSlotEvent = (CK_C_WaitForSlotEvent)GlobalData::getInstance().getBaseFunction("C_WaitForSlotEvent");
 	if(Base_C_WaitForSlotEvent == NULL) return CKR_GENERAL_ERROR;
 	
 	return (*Base_C_WaitForSlotEvent)(flags, pSlot, pReserved);
