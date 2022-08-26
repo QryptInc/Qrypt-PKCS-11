@@ -50,7 +50,7 @@ class GlobalData {
         CK_LOCKMUTEX customLockMutex;
         CK_UNLOCKMUTEX customUnlockMutex;
 
-        CK_RV getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs);
+        CK_RV setThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs);
 
         CK_RV createMutexIfNecessary(CK_VOID_PTR_PTR ppMutex);
         CK_RV destroyMutexIfNecessary(CK_VOID_PTR pMutex);

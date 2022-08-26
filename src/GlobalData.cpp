@@ -22,7 +22,7 @@ GlobalData::GlobalData() {
     this->randomBuffer = std::unique_ptr<RandomBuffer>(nullptr);
 }
 
-CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
+CK_RV GlobalData::setThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
     if(pInitArgs == NULL) {
         this->isMultithreaded = false;
 
@@ -58,7 +58,7 @@ CK_RV GlobalData::initialize(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
     CK_RV rv = this->baseHSM.initialize();
     if(rv != CKR_OK) return rv;
 
-    rv = getThreadSettings(pInitArgs);
+    rv = setThreadSettings(pInitArgs);
     if(rv != CKR_OK) return rv;
 
     // Create mutex for access to random buffer
