@@ -8,6 +8,8 @@
 #ifndef _QRYPT_WRAPPER_GLOBALDATA_H
 #define _QRYPT_WRAPPER_GLOBALDATA_H
 
+#include <memory>             // std::shared_ptr
+
 #include "cryptoki.h"         // PKCS#11 types
 
 #include "BaseHSM.h"          // BaseHSM
@@ -38,7 +40,7 @@ class GlobalData {
         GlobalData();
         ~GlobalData(){};
 
-        BaseHSM *baseHSM;
+        BaseHSM baseHSM;
 
         // Mutex stuff
         bool isMultithreaded;
@@ -58,8 +60,8 @@ class GlobalData {
         // Random buffer stuff
         CK_VOID_PTR randomBufferMutex;
 
-        RandomCollector *randomCollector;
-        RandomBuffer *randomBuffer;
+        std::shared_ptr<RandomCollector> randomCollector;
+        std::unique_ptr<RandomBuffer>    randomBuffer;
         CK_RV setupRandomBuffer();
 };
 

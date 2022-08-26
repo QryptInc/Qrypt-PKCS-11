@@ -9,8 +9,6 @@
 #include "GlobalData.h"
 
 GlobalData::GlobalData() {
-    this->baseHSM = NULL;
-
     this->isMultithreaded = false;
 
     this->customCreateMutex = NULL;
@@ -20,8 +18,8 @@ GlobalData::GlobalData() {
 
     this->randomBufferMutex = NULL;
 
-    this->randomCollector = NULL;
-    this->randomBuffer = NULL;
+    this->randomCollector = std::shared_ptr<RandomCollector>(nullptr);
+    this->randomBuffer = std::unique_ptr<RandomBuffer>(nullptr);
 }
 
 CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
@@ -57,8 +55,7 @@ CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
 }
 
 CK_RV GlobalData::initialize(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
-    this->baseHSM = new BaseHSM;
-    CK_RV rv = this->baseHSM->initialize();
+    CK_RV rv = this->baseHSM.initialize();
     if(rv != CKR_OK) return rv;
 
     rv = getThreadSettings(pInitArgs);
@@ -81,10 +78,7 @@ CK_RV GlobalData::finalize() {
         if(rv != CKR_OK) return rv;
     }
 
-    if(baseHSM != NULL) {
-        delete baseHSM;
-    }
-    baseHSM = NULL;
+    baseHSM.finalize();
 
     isMultithreaded = false;
 
@@ -95,28 +89,18 @@ CK_RV GlobalData::finalize() {
 
     randomBufferMutex = NULL;
 
-    if(randomBuffer != NULL) {
-        randomBuffer->wipe();
-        delete randomBuffer;
-    }
-
-    randomBuffer = NULL;
-
-    if(randomCollector != NULL) {
-        delete randomCollector;
-    }
-
-    randomCollector = NULL;
+    randomBuffer.reset();
+    randomCollector.reset();
 
     return CKR_OK;
 }
 
 bool GlobalData::isCryptokiInitialized() {
-    return this->baseHSM != NULL;
+    return this->baseHSM.isInitialized();
 }
 
 void *GlobalData::getBaseFunction(std::string fn_name) {
-    return this->baseHSM->getFunction(fn_name);
+    return this->baseHSM.getFunction(fn_name);
 }
 
 CK_RV GlobalData::createMutexIfNecessary(CK_VOID_PTR_PTR ppMutex) {
@@ -178,10 +162,10 @@ CK_RV GlobalData::setupRandomBuffer() {
 
 	std::string token(token_c_str);
 
-    this->randomCollector = new MeteringClientWrapper(token);
+    this->randomCollector = std::make_unique<MeteringClientWrapper>(token);
 
     try {
-        this->randomBuffer = new RandomBuffer(this->randomCollector);
+        this->randomBuffer = std::make_unique<RandomBuffer>(this->randomCollector);
     } catch (std::runtime_error &ex) {
         // Failed to valloc or mlock buffer
         ERROR_MSG("%s", ex.what());

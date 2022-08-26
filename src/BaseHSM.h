@@ -12,7 +12,13 @@
 
 class BaseHSM {
     public:
+        BaseHSM() { baseFunctionList = NULL; }
+
         CK_RV initialize();
+        bool isInitialized() { return baseFunctionList != NULL; }
+        
+        void finalize() { baseFunctionList = NULL; }
+
         void *getFunction(std::string fn_name);
     private:
         CK_FUNCTION_LIST_PTR baseFunctionList;

@@ -202,13 +202,11 @@ PKCS_API CK_RV C_GetInfo(CK_INFO_PTR pInfo)
 			const char *description_prefix = "Wrap of ";
 			size_t prefix_len = 8;
 
-			char *oldDescription = new char[32];
-			strncpy(oldDescription, (char *)pInfo->libraryDescription, 32);
+			std::unique_ptr<char[]> oldDescription = std::make_unique<char[]>(32);
+			strncpy(oldDescription.get(), (char *)pInfo->libraryDescription, 32);
 
 			strncpy((char *)(pInfo->libraryDescription), description_prefix, prefix_len);
-			strncpy(oldDescription, (char *)&pInfo->libraryDescription[prefix_len], 32 - prefix_len);
-
-			delete[] oldDescription;
+			strncpy(oldDescription.get(), (char *)&pInfo->libraryDescription[prefix_len], 32 - prefix_len);
 
 			// Write over libraryVersion
 			pInfo->libraryVersion.major = 0;

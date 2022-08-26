@@ -22,12 +22,13 @@ TEST(BufferTests, All255) {
     uint8_t very_random[1024] = {0};
     std::fill_n(very_random, 1024, (uint8_t)255);
 
-    MockRandomCollector randomCollector;
-    EXPECT_CALL(randomCollector, collectRandom(_, 1024))
+    std::shared_ptr<MockRandomCollector> randomCollector = std::make_shared<MockRandomCollector>();
+
+    EXPECT_CALL(*randomCollector, collectRandom(_, 1024))
         .WillOnce(DoAll(SetArrayArgument<0>(very_random, &very_random[1024]),
                         Return(CKR_OK)));
 
-    RandomBuffer randomBuffer(&randomCollector);
+    RandomBuffer randomBuffer(randomCollector);
 
     CK_RV rv = randomBuffer.getRandom(dest, 20);
 
@@ -41,12 +42,12 @@ TEST(BufferTests, All255) {
 TEST(BufferTests, CollectReturnsNotOk) {
     uint8_t dest[20] = {0};
 
-    MockRandomCollector randomCollector;
+    std::shared_ptr<MockRandomCollector> randomCollector = std::make_shared<MockRandomCollector>();
 
-    EXPECT_CALL(randomCollector, collectRandom(_, 1024))
+    EXPECT_CALL(*randomCollector, collectRandom(_, 1024))
         .WillOnce(Return(CKR_QRYPT_TOKEN_INVALID));
 
-    RandomBuffer randomBuffer(&randomCollector);
+    RandomBuffer randomBuffer(randomCollector);
 
     CK_RV rv = randomBuffer.getRandom(dest, 20);
 
@@ -66,15 +67,15 @@ TEST(BufferTests, AllNonzero) {
     for(size_t i = 0; i < 2048; i++)
         very_random[i] = (rand() % 255) + 1;
 
-    MockRandomCollector randomCollector;
+    std::shared_ptr<MockRandomCollector> randomCollector = std::make_shared<MockRandomCollector>();
 
-    EXPECT_CALL(randomCollector, collectRandom(_, 1024))
+    EXPECT_CALL(*randomCollector, collectRandom(_, 1024))
         .WillOnce(DoAll(SetArrayArgument<0>(very_random, &very_random[1024]),
                         Return(CKR_OK)))
         .WillOnce(DoAll(SetArrayArgument<0>(&very_random[1024], &very_random[2048]),
                         Return(CKR_OK)));
 
-    RandomBuffer randomBuffer(&randomCollector);
+    RandomBuffer randomBuffer(randomCollector);
     
     for(size_t iteration = 0; iteration < 400; iteration++) {
         CK_RV rv = randomBuffer.getRandom(&dest[5 * iteration], 5);
@@ -96,26 +97,26 @@ TEST(BufferTests, MoreThan1024) {
     for(size_t i = 0; i < 10240; i++)
         very_random[i] = rand() % 256;
     
-    MockRandomCollector randomCollector;
+    std::shared_ptr<MockRandomCollector> randomCollector = std::make_shared<MockRandomCollector>();
 
     {
         InSequence seq;
 
-        EXPECT_CALL(randomCollector, collectRandom(_, 4096))
+        EXPECT_CALL(*randomCollector, collectRandom(_, 4096))
             .WillOnce(DoAll(SetArrayArgument<0>(very_random, &very_random[4096]),
                             Return(CKR_OK)));
-        EXPECT_CALL(randomCollector, collectRandom(_, 2048))
+        EXPECT_CALL(*randomCollector, collectRandom(_, 2048))
             .WillOnce(DoAll(SetArrayArgument<0>(&very_random[4096], &very_random[6144]),
                             Return(CKR_OK)));
-        EXPECT_CALL(randomCollector, collectRandom(_, 1024))
+        EXPECT_CALL(*randomCollector, collectRandom(_, 1024))
             .WillOnce(DoAll(SetArrayArgument<0>(&very_random[6144], &very_random[7168]),
                             Return(CKR_OK)));
-        EXPECT_CALL(randomCollector, collectRandom(_, 3072))
+        EXPECT_CALL(*randomCollector, collectRandom(_, 3072))
             .WillOnce(DoAll(SetArrayArgument<0>(&very_random[7168], &very_random[10240]),
                             Return(CKR_OK)));
     }
 
-    RandomBuffer randomBuffer(&randomCollector);
+    RandomBuffer randomBuffer(randomCollector);
 
     CK_RV rv = randomBuffer.getRandom(dest, 4000);
     EXPECT_EQ(rv, CKR_OK);
@@ -165,7 +166,7 @@ TEST(BufferTests, NoReuse) {
 
     uint8_t *random_stream_bytes = (uint8_t *)random_stream_64_bits;
 
-    MockRandomCollector randomCollector;
+    std::shared_ptr<MockRandomCollector> randomCollector = std::make_shared<MockRandomCollector>();
 
     {
         InSequence seq;
@@ -187,7 +188,7 @@ TEST(BufferTests, NoReuse) {
                 uint8_t *random_start = &random_stream_bytes[random_stream_bytes_idx];
                 uint8_t *random_end = &random_start[round_up];
 
-                EXPECT_CALL(randomCollector, collectRandom(_, round_up))
+                EXPECT_CALL(*randomCollector, collectRandom(_, round_up))
                     .WillOnce(DoAll(SetArrayArgument<0>(random_start, random_end),
                                     Return(CKR_OK)));
                 
@@ -200,7 +201,7 @@ TEST(BufferTests, NoReuse) {
         }
     }
 
-    RandomBuffer randomBuffer(&randomCollector);
+    RandomBuffer randomBuffer(randomCollector);
 
     uint64_t *output_stream_64_bits = new uint64_t[sum_request_sizes_in_64_bits];
     uint8_t *output_stream_bytes = (uint8_t *)output_stream_64_bits;
