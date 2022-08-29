@@ -192,21 +192,30 @@ PKCS_API CK_RV C_GetInfo(CK_INFO_PTR pInfo)
 
 		if(rv == CKR_OK) {
 			// Write over manufacturer
-			const char *manufacturer = "Qrypt, Inc.";
-			size_t manufacturer_len = 11;
 
-			strncpy((char *)(pInfo->manufacturerID), manufacturer, manufacturer_len);
-			memset(&(pInfo->manufacturerID[manufacturer_len]), ' ', 32 - manufacturer_len);
+			// Set all 32 to blank characters
+			memset(pInfo->manufacturerID, ' ', 32);
+
+			// Set manufacturer to Qrypt
+			const char *manufacturer = "Qrypt, Inc.";
+			size_t manufacturer_len = strlen(manufacturer);
+
+			memcpy(pInfo->manufacturerID, manufacturer, manufacturer_len);
 
 			// Prepend "Wrap of " to description
+
 			const char *description_prefix = "Wrap of ";
-			size_t prefix_len = 8;
+			size_t prefix_len = strlen(description_prefix);
 
+			// Temporarily store the original description
 			std::unique_ptr<char[]> oldDescription = std::make_unique<char[]>(32);
-			strncpy(oldDescription.get(), (char *)pInfo->libraryDescription, 32);
+			memcpy(oldDescription.get(), pInfo->libraryDescription, 32);
 
-			strncpy((char *)(pInfo->libraryDescription), description_prefix, prefix_len);
-			strncpy(oldDescription.get(), (char *)&pInfo->libraryDescription[prefix_len], 32 - prefix_len);
+			// Start description with "Wrap of "
+			memcpy(pInfo->libraryDescription, description_prefix, prefix_len);
+
+			// Finish description with original
+			memcpy(&pInfo->libraryDescription[prefix_len], oldDescription.get(), 32 - prefix_len);
 
 			// Write over libraryVersion
 			pInfo->libraryVersion.major = 0;
