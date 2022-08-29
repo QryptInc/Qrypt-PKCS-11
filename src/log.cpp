@@ -1,5 +1,6 @@
 #include <stdarg.h>   // va_*
 #include <iostream>   // std::cerr
+#include <sstream>    // std::stringstream
 
 #include "log.h"
 
@@ -41,6 +42,9 @@ void qryptokiLog(const int level, const char* format, ...)
 	vsnprintf(message, 4096, format, args);
 	va_end(args);
 
-	std::cerr << logLevelToString(level) << ": " << message << std::endl;
+	std::stringstream stream;
+	stream << logLevelToString(level) << ": " << message << std::endl;
+
+	std::cerr << stream.str();
 }
 
