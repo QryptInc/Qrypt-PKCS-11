@@ -33,7 +33,7 @@ jobs:
     displayName: install GTest
   - bash: |
       cd pipeline
-      wget https://cmake.org/files/v3.24/cmake-3.24.1-linux-x86_64.tar.gz
+      wget https://dist.opendnssec.org/source/softhsm-2.6.1.tar.gz
       tar -xzvf softhsm-2.6.1.tar.gz && rm softhsm-2.6.1.tar.gz
       cd softhsm-2.6.1
       ./configure
