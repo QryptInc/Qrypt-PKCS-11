@@ -41,18 +41,6 @@ jobs:
       sudo make install
     displayName: install SoftHSM
   - bash: |
-      cd deps/qrypt/MeteringClient
-      mkdir build && cd build
-      cmake ..
-      make
-      make install
-    displayName: install MeteringClient
-  - bash: |
-      cd deps/qrypt/MeteringClient/build
-      gtests/lib/MeteringClientlib_tst
-      gtests/src/metering_client_tst
-    displayName: MeteringClient GTests
-  - bash: |
       mkdir build && cd build
       cmake ..
       make

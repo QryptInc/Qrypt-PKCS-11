@@ -107,12 +107,12 @@ int main() {
         session = openSession(SLOT);
         login(session);
 
-        const CK_ULONG len = 10;
+        const CK_ULONG len = 1024;
         CK_BYTE data[len];
 
         generateRandom(session, data, len);
 
-        for(CK_ULONG i = 0; i < len; i++) {
+        for(CK_ULONG i = 0; i < 10; i++) {
             cout << "data[" << i << "] = " << (unsigned int)data[i] << endl;
         }
     }
