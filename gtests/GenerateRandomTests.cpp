@@ -127,10 +127,11 @@ TEST (GenerateRandomTests, BogusCACert) {
     CK_RV rv = C_GenerateRandom(session, data, len);
     EXPECT_TRUE(rv == CKR_OK || rv == CKR_QRYPT_CA_CERT_FAILURE) << rv;
 
-    if(rv == CKR_OK)
+    if(rv == CKR_OK) {
         EXPECT_FALSE(allZeroes(data, len));
-    else
+    } else {
         EXPECT_TRUE(allZeroes(data, len));
+    }
 
     EXPECT_EQ(CKR_OK, finalize());
     
