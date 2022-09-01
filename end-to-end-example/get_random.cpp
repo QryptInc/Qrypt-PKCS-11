@@ -178,12 +178,22 @@ int main() {
         slotID = getEnd2EndSlot();
         session = openSession(slotID);
 
-        const CK_ULONG len = 1024;
-        CK_BYTE data[len];
+        CK_ULONG len;
 
-        generateRandom(session, data, len);
+        cout << "How many bytes do you want? (Enter a number from 0 to 104858. WARNING: This will count towards your Qrypt monthly usage.) ";
+        cin >> len;
 
-        for(CK_ULONG i = 0; i < 10; i++) {
+        if(len < 0 || len > 104858) throw runtime_error("Invalid number of bytes.");
+
+        unique_ptr<CK_BYTE[]> data = make_unique<CK_BYTE[]>(len);
+
+        generateRandom(session, data.get(), len);
+
+        CK_ULONG len_to_print = len < 10 ? len : 10;
+
+        cout << "Here are the first few bytes:" << endl;
+
+        for(CK_ULONG i = 0; i < len_to_print; i++) {
             cout << "data[" << i << "] = " << (unsigned int)data[i] << endl;
         }
     }
