@@ -10,6 +10,17 @@ TEST (GetInfoTests, NotInitialized) {
     EXPECT_EQ(rv, CKR_CRYPTOKI_NOT_INITIALIZED);
 }
 
+TEST (GetInfoTests, BadArgs) {
+    CK_RV rv = initializeSingleThreaded();
+    EXPECT_EQ(rv, CKR_OK);
+
+    rv = C_GetInfo(NULL_PTR);
+    EXPECT_EQ(rv, CKR_ARGUMENTS_BAD);
+
+    rv = finalize();
+    EXPECT_EQ(rv, CKR_OK);
+}
+
 TEST (GetInfoTests, Valid) {
     CK_INFO info;
 

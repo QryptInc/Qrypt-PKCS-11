@@ -39,6 +39,21 @@ TEST (SeedRandomTests, SessionClosed) {
     EXPECT_EQ(CKR_OK, finalize());
 }
 
+TEST (SeedRandomTests, BadArgs) {
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 40;
+    EXPECT_EQ(CKR_ARGUMENTS_BAD, C_SeedRandom(session, NULL_PTR, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
+}
+
 TEST (SeedRandomTests, Valid) {
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 

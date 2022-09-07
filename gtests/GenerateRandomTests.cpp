@@ -128,6 +128,21 @@ TEST (GenerateRandomTests, BogusCACert) {
     revertEnvVar(CA_CERT_ENV_VAR, stashed_ca_cert);
 }
 
+TEST (GenerateRandomTests, BadArgs) {
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 2000;
+    EXPECT_EQ(CKR_ARGUMENTS_BAD, C_GenerateRandom(session, NULL_PTR, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
+}
+
 TEST (GenerateRandomTests, ValidRequestBasic) {
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
