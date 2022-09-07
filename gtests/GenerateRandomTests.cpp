@@ -57,7 +57,7 @@ TEST (GenerateRandomTests, SessionClosed) {
 }
 
 TEST (GenerateRandomTests, EmptyToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EMPTY_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EMPTY_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -79,7 +79,7 @@ TEST (GenerateRandomTests, EmptyToken) {
 }
 
 TEST (GenerateRandomTests, BogusToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BOGUS_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BOGUS_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -101,7 +101,7 @@ TEST (GenerateRandomTests, BogusToken) {
 }
 
 TEST (GenerateRandomTests, BogusCACert) {
-    char *stashed_ca_cert = setEnvVar(CA_CERT_ENV_VAR, BOGUS_PATH);
+    std::unique_ptr<char[]> stashed_ca_cert = setEnvVar(CA_CERT_ENV_VAR, BOGUS_PATH);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 

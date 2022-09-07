@@ -15,7 +15,7 @@ TEST (InitializeTests, AlreadyInitialized) {
 }
 
 TEST (InitializeTests, EmptyBaseHSM) {
-    char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, EMPTY_PATH);
+    std::unique_ptr<char[]> stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, EMPTY_PATH);
 
     CK_RV rv = initializeSingleThreaded();
     EXPECT_EQ(rv, CKR_QRYPT_BASE_HSM_EMPTY);
@@ -27,7 +27,7 @@ TEST (InitializeTests, EmptyBaseHSM) {
 }
 
 TEST (InitializeTests, BogusBaseHSM) {
-    char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
+    std::unique_ptr<char[]> stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
 
     CK_RV rv = initializeSingleThreaded();
     EXPECT_EQ(rv, CKR_QRYPT_BASE_HSM_OPEN_FAILED);
@@ -39,8 +39,6 @@ TEST (InitializeTests, BogusBaseHSM) {
 }
 
 TEST (InitializeTests, BadArgsReservedNonNULL) {
-    bool *ptr = new bool;
-
     CK_C_INITIALIZE_ARGS initializeArgs;
 
     initializeArgs.CreateMutex = NULL;
@@ -48,15 +46,13 @@ TEST (InitializeTests, BadArgsReservedNonNULL) {
     initializeArgs.LockMutex = NULL;
     initializeArgs.UnlockMutex = NULL;
     initializeArgs.flags = 0;
-    initializeArgs.pReserved = ptr;
+    initializeArgs.pReserved = &initializeArgs; // any nonNULL will do
 
     CK_RV rv = C_Initialize(&initializeArgs);
     EXPECT_EQ(rv, CKR_ARGUMENTS_BAD);
 
     rv = finalize();
     EXPECT_EQ(rv, CKR_CRYPTOKI_NOT_INITIALIZED);
-
-    delete ptr;
 }
 
 CK_RV customUnlockMutex(CK_VOID_PTR pMutex) {

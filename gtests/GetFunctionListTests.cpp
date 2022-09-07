@@ -78,14 +78,12 @@ bool allFunctionsNonNULL(CK_FUNCTION_LIST_PTR pFunctionList) {
 }
 
 TEST (GetFunctionListTests, Valid) {
-    CK_FUNCTION_LIST_PTR_PTR ppFunctionList;
-    ppFunctionList = new CK_FUNCTION_LIST_PTR;
-    *ppFunctionList = NULL;
+    CK_FUNCTION_LIST_PTR pFunctionList = NULL;
 
-    CK_RV rv = C_GetFunctionList(ppFunctionList);
+    CK_RV rv = C_GetFunctionList(&pFunctionList);
     EXPECT_EQ(rv, CKR_OK);
 
-    ASSERT_TRUE(*ppFunctionList != NULL);
-    EXPECT_TRUE(allFunctionsNonNULL(*ppFunctionList));
+    ASSERT_TRUE(pFunctionList != NULL);
+    EXPECT_TRUE(allFunctionsNonNULL(pFunctionList));
 }
 

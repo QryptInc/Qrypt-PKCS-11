@@ -3,13 +3,14 @@
 
 #include "common.h"
 
-char *setEnvVar(const char *var_name, const char *new_value) {
+std::unique_ptr<char[]> setEnvVar(const char *var_name, const char *new_value) {
     char *old_value = getenv(var_name);
 
     if(old_value == NULL) return NULL;
 
     size_t old_value_len = strlen(old_value);
-    char *old_value_copy = new char[old_value_len + 1];
+
+    std::unique_ptr<char[]> old_value_copy = std::make_unique<char[]>(old_value_len + 1);
     
     for(size_t i = 0; i < old_value_len + 1; i++)
         old_value_copy[i] = old_value[i];
@@ -18,12 +19,11 @@ char *setEnvVar(const char *var_name, const char *new_value) {
     return old_value_copy;
 }
 
-void revertEnvVar(const char *var_name, char *stashed_value) {
+void revertEnvVar(const char *var_name, std::unique_ptr<char[]> &stashed_value) {
     if(stashed_value == NULL) {
         unsetenv(var_name);
     } else {
-        setenv(var_name, stashed_value, 1);
-        delete[] stashed_value;
+        setenv(var_name, stashed_value.get(), 1);
     }
 }
 
@@ -70,8 +70,8 @@ CK_RV newGTestSlot(CK_SLOT_ID &slotID) {
     if(rv != CKR_OK) return rv;
 
     // slotList = list of all slots
-    CK_SLOT_ID_PTR slotList = new CK_SLOT_ID[slotCount];
-    rv = C_GetSlotList(CK_FALSE, slotList, &slotCount);
+    std::unique_ptr<CK_SLOT_ID[]> slotList = std::make_unique<CK_SLOT_ID[]>(slotCount);
+    rv = C_GetSlotList(CK_FALSE, slotList.get(), &slotCount);
     if(rv != CKR_OK) return rv;
 
     // Search for empty slot + try to initalize token
@@ -86,13 +86,9 @@ CK_RV newGTestSlot(CK_SLOT_ID &slotID) {
         CK_UTF8CHAR_PTR label = (CK_UTF8CHAR_PTR)GTEST_TOKEN_LABEL;
 
         rv = C_InitToken(slotID, soPin, soPinLen, label);
-        if(rv == CKR_OK) {
-            delete[] slotList;
-            return CKR_OK;
-        }
+        if(rv == CKR_OK) return CKR_OK;
     }
 
-    delete[] slotList;
     throw std::runtime_error("No preexisting GTest slots found, and no empty slots could be initialized.");
 }
 
@@ -105,8 +101,8 @@ CK_RV getGTestSlot(CK_SLOT_ID &slotID) {
     if(rv != CKR_OK) return rv;
 
     // slotList = list of slots containing tokens
-    CK_SLOT_ID_PTR slotList = new CK_SLOT_ID[slotCount];
-    rv = C_GetSlotList(CK_TRUE, slotList, &slotCount);
+    std::unique_ptr<CK_SLOT_ID[]> slotList = std::make_unique<CK_SLOT_ID[]>(slotCount);
+    rv = C_GetSlotList(CK_TRUE, slotList.get(), &slotCount);
     if(rv != CKR_OK) return rv;
 
     bool foundGTestSlot = false;
@@ -118,8 +114,6 @@ CK_RV getGTestSlot(CK_SLOT_ID &slotID) {
         foundGTestSlot = true;
         break;
     }
-
-    delete[] slotList;
 
     if(foundGTestSlot)
         return CKR_OK;
