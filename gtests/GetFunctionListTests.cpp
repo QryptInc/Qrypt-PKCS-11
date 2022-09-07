@@ -85,7 +85,7 @@ TEST (GetFunctionListTests, Valid) {
     CK_RV rv = C_GetFunctionList(ppFunctionList);
     EXPECT_EQ(rv, CKR_OK);
 
-    EXPECT_NE(*ppFunctionList, NULL);
+    ASSERT_TRUE(*ppFunctionList != NULL);
     EXPECT_TRUE(allFunctionsNonNULL(*ppFunctionList));
 }
 

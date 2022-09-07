@@ -22,6 +22,7 @@ set(TEST_SOURCES
     common.cpp
     InitializeTests.cpp
     FinalizeTests.cpp
+    GetFunctionListTests.cpp
     GetInfoTests.cpp
     SeedRandomTests.cpp
     GenerateRandomTests.cpp
