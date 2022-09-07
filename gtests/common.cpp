@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdexcept>
 
-#include "pkcs11.h"
 #include "common.h"
 
 char *setEnvVar(const char *var_name, const char *new_value) {

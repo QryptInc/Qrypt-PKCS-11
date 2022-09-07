@@ -1,15 +1,14 @@
 #include <stdlib.h>
 #include <stdexcept>     // std::runtime_error
 
-#include "log.h"                    // logging macros
-#include "osmutex.h"                // mutex functions
-#include "MeteringClientWrapper.h"  // MeteringClientWrapper
+#include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
+#include "log.h"                         // logging macros
+#include "osmutex.h"                     // mutex functions
+#include "MeteringClientWrapper.h"       // MeteringClientWrapper
 
 #include "GlobalData.h"
 
 GlobalData::GlobalData() {
-    this->baseHSM = NULL;
-
     this->isMultithreaded = false;
 
     this->customCreateMutex = NULL;
@@ -19,11 +18,11 @@ GlobalData::GlobalData() {
 
     this->randomBufferMutex = NULL;
 
-    this->randomCollector = NULL;
-    this->randomBuffer = NULL;
+    this->randomCollector = std::shared_ptr<RandomCollector>(nullptr);
+    this->randomBuffer = std::unique_ptr<RandomBuffer>(nullptr);
 }
 
-CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
+CK_RV GlobalData::setThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
     if(pInitArgs == NULL) {
         this->isMultithreaded = false;
 
@@ -34,15 +33,10 @@ CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
     } else {
         bool osLockingOk = pInitArgs->flags & CKF_OS_LOCKING_OK;
 
-        CK_CREATEMUTEX create;
-        CK_DESTROYMUTEX destroy;
-        CK_LOCKMUTEX lock;
-        CK_UNLOCKMUTEX unlock;
-
-        create = pInitArgs->CreateMutex;
-        destroy = pInitArgs->DestroyMutex;
-        lock = pInitArgs->LockMutex;
-        unlock = pInitArgs->UnlockMutex;
+        CK_CREATEMUTEX create = pInitArgs->CreateMutex;
+        CK_DESTROYMUTEX destroy = pInitArgs->DestroyMutex;
+        CK_LOCKMUTEX lock = pInitArgs->LockMutex;
+        CK_UNLOCKMUTEX unlock = pInitArgs->UnlockMutex;
 
         bool oneNonNull = create || destroy || lock || unlock;
         bool allNonNull = create && destroy && lock && unlock;
@@ -61,15 +55,14 @@ CK_RV GlobalData::getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
 }
 
 CK_RV GlobalData::initialize(CK_C_INITIALIZE_ARGS_PTR pInitArgs) {
-    this->baseHSM = new BaseHSM;
-    CK_RV rv = this->baseHSM->initialize();
+    CK_RV rv = this->baseHSM.initialize();
     if(rv != CKR_OK) return rv;
 
-    rv = getThreadSettings(pInitArgs);
+    rv = setThreadSettings(pInitArgs);
     if(rv != CKR_OK) return rv;
 
     // Create mutex for access to random buffer
-    CK_VOID_PTR mutex;
+    CK_VOID_PTR mutex = NULL;
     
     rv = createMutexIfNecessary(&mutex);
     if(rv != CKR_OK) return rv;
@@ -85,10 +78,7 @@ CK_RV GlobalData::finalize() {
         if(rv != CKR_OK) return rv;
     }
 
-    if(baseHSM != NULL) {
-        delete baseHSM;
-    }
-    baseHSM = NULL;
+    baseHSM.finalize();
 
     isMultithreaded = false;
 
@@ -99,28 +89,18 @@ CK_RV GlobalData::finalize() {
 
     randomBufferMutex = NULL;
 
-    if(randomBuffer != NULL) {
-        randomBuffer->wipe();
-        delete randomBuffer;
-    }
-
-    randomBuffer = NULL;
-
-    if(randomCollector != NULL) {
-        delete randomCollector;
-    }
-
-    randomCollector = NULL;
+    randomBuffer.reset();
+    randomCollector.reset();
 
     return CKR_OK;
 }
 
 bool GlobalData::isCryptokiInitialized() {
-    return this->baseHSM != NULL;
+    return this->baseHSM.isInitialized();
 }
 
 void *GlobalData::getBaseFunction(std::string fn_name) {
-    return this->baseHSM->getFunction(fn_name);
+    return this->baseHSM.getFunction(fn_name);
 }
 
 CK_RV GlobalData::createMutexIfNecessary(CK_VOID_PTR_PTR ppMutex) {
@@ -182,10 +162,10 @@ CK_RV GlobalData::setupRandomBuffer() {
 
 	std::string token(token_c_str);
 
-    this->randomCollector = new MeteringClientWrapper(token);
+    this->randomCollector = std::make_unique<MeteringClientWrapper>(token);
 
     try {
-        this->randomBuffer = new RandomBuffer(this->randomCollector);
+        this->randomBuffer = std::make_unique<RandomBuffer>(this->randomCollector);
     } catch (std::runtime_error &ex) {
         // Failed to valloc or mlock buffer
         ERROR_MSG("%s", ex.what());

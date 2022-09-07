@@ -29,26 +29,10 @@ See the [Requirements Setup](../../wiki/Requirements-Setup) page on the GitHub w
     * QRYPT_LOG_LEVEL: The library's log level, as an integer. Follows the syslog convention: error = 3, warning = 4, info = 6 (default), debug = 7.
     * QRYPT_CA_CERT_PATH: A path to a custom CA certificate file. If unset, the OS-default CA certificate file will be used.
 
-### MeteringClient
-First, we build MeteringClient, a Qrypt package that accesses the Qrypt Entropy-as-a-Service (EaaS) API:
-
-```
-cd deps/qrypt/MeteringClient
-mkdir build && cd build
-cmake ..
-make
-./gtests/lib/MeteringClientlib_tst
-./gtests/src/metering_client_tst
-make install
-```
-
 ### Build + Test
 
-After that, it's time to build the library:
-
 ```
-cd ../../../..                # Back to the project root directory!
-mkdir build && cd build
+mkdir build && cd build   # Start in the project root directory
 cmake ..
 make
 ```
@@ -58,7 +42,23 @@ Now, we run the tests. (Don't worry! They only use your token for about 5KB of Q
 ./gtests/qryptoki_gtests
 ```
 
-If all tests pass, you're good to go! The library to link to is build/libqryptoki.so, and the header file with all vendor-defined macros is inc/pkcs11.h.
+If the tests pass, go ahead and install:
+```
+make install   # Installs to (top-level) package/ folder
+```
+
+You can now try the end-to-end example (which consumes 1KB of entropy):
+```
+cd ../end-to-end-example
+mkdir build && cd build
+cmake ..
+make
+./get_random
+```
+
+If all tests pass and the end-to-end output looks alright, then you're good to go! The library to link to is package/lib/libqryptoki.so, and public header files are in package/inc. See the end-to-end example for some sample code.
+
+You can track entropy usage on the [portal](https://portal.qrypt.com/).
 
 ## Documentation, support, and feedback
 
@@ -67,3 +67,9 @@ Check out the repo's wiki pages here on GitHub!
 ## Contributing
 
 Still working on getting a contributing infrastructure set up, but we're so happy you're interested! Go ahead and publish any issues or PRs here, but understand we may be slow in responding.
+
+## Licensing
+
+This project is under the MIT License. See the LICENSE file for more details.
+
+Dependencies' licenses can be found in deps/third-party-licenses.

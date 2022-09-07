@@ -4,7 +4,8 @@
 
 #include <cstring>     // strncmp
 
-#include "log.h"       // logging macros
+#include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
+#include "log.h"                         // logging macros
 
 #include "MeteringClientWrapper.h"
 
@@ -30,13 +31,11 @@ CK_RV MeteringClientWrapper::collectRandom(uint8_t *dest, size_t goal) const {
     if (goal == 0) return CKR_OK;
     
     size_t goalRoundUpToKB = ((goal + KB - 1) / KB) * KB;
-    uint8_t* outputRoundUpKB = new uint8_t[goalRoundUpToKB];
+    std::unique_ptr<uint8_t[]> outputRoundUpKB = std::make_unique<uint8_t[]>(goalRoundUpToKB);
 
     try {
-        _HttpRandomGetter->getRandomBuffer(goalRoundUpToKB, outputRoundUpKB);
+        _HttpRandomGetter->getRandomBuffer(goalRoundUpToKB, outputRoundUpKB.get());
     } catch (std::exception &ex) {
-        delete[] outputRoundUpKB;
-
         const char *msg = ex.what();
 
         if(strncmp("Reponse code: 401", msg, 17) == 0)
@@ -48,8 +47,7 @@ CK_RV MeteringClientWrapper::collectRandom(uint8_t *dest, size_t goal) const {
         return CKR_GENERAL_ERROR;
     }
 
-    memcpy(dest, outputRoundUpKB, goal);
-    delete[] outputRoundUpKB;
+    memcpy(dest, outputRoundUpKB.get(), goal);
 
     return CKR_OK;
 }

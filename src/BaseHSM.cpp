@@ -1,7 +1,8 @@
 #include <stdlib.h>
-#include <dlfcn.h>    // dlopen
+#include <dlfcn.h>                       // dlopen
 
-#include "log.h"      // logging macros
+#include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
+#include "log.h"                         // logging macros
 
 #include "BaseHSM.h"
 
@@ -76,6 +77,11 @@ bool allFunctionsNonNULL(CK_FUNCTION_LIST_PTR list) {
         list->C_CancelFunction;
 }
 
+BaseHSM::BaseHSM() {
+    this->handle = NULL;
+    this->baseFunctionList = NULL;
+}
+
 CK_RV BaseHSM::initialize() {
     char *path = getenv("QRYPT_BASE_HSM_PATH");
     if(path == NULL || path[0] == '\0') {
@@ -83,14 +89,14 @@ CK_RV BaseHSM::initialize() {
 		return CKR_QRYPT_BASE_HSM_EMPTY;
 	}
 
-    void *handle = dlopen(path, RTLD_LAZY | RTLD_LOCAL | RTLD_DEEPBIND);
-    if(handle == NULL) {
+    void *tmp_handle = dlopen(path, RTLD_LAZY | RTLD_LOCAL | RTLD_DEEPBIND);
+    if(tmp_handle == NULL) {
         ERROR_MSG("Could not find base HSM at path given by QRYPT_BASE_HSM_PATH.");
         return CKR_QRYPT_BASE_HSM_OPEN_FAILED;
     }
 
     CK_C_GetFunctionList Base_C_GetFunctionList;
-    Base_C_GetFunctionList = (CK_C_GetFunctionList)dlsym(handle, "C_GetFunctionList");
+    Base_C_GetFunctionList = (CK_C_GetFunctionList)dlsym(tmp_handle, "C_GetFunctionList");
     if(Base_C_GetFunctionList == NULL) {
         ERROR_MSG("Could not find base HSM's C_GetFunctionList.");
         return CKR_QRYPT_BASE_HSM_OPEN_FAILED;
@@ -101,17 +107,34 @@ CK_RV BaseHSM::initialize() {
     CK_RV rv = (*Base_C_GetFunctionList)(&list);
     if(rv != CKR_OK) {
         ERROR_MSG("Base HSM's C_GetFunctionList returned non-OK value: %lu.", rv);
+        dlclose(tmp_handle);
         return CKR_QRYPT_BASE_HSM_OPEN_FAILED;
     } else if(list == NULL) {
         ERROR_MSG("Base HSM's function list is NULL.");
+        dlclose(tmp_handle);
         return CKR_QRYPT_BASE_HSM_OPEN_FAILED;
     } else if(!allFunctionsNonNULL(list)) {
         ERROR_MSG("Base HSM's function list incomplete.");
+        dlclose(tmp_handle);
         return CKR_QRYPT_BASE_HSM_OPEN_FAILED;
     }
 
+    this->handle = tmp_handle;
     this->baseFunctionList = list;
     return CKR_OK;
+}
+
+bool BaseHSM::isInitialized() {
+    return this->handle != NULL;
+}
+
+void BaseHSM::finalize() {
+    if(this->handle != NULL) {
+        dlclose(this->handle);
+        this->handle = NULL;
+    }
+
+    baseFunctionList = NULL;
 }
 
 void *BaseHSM::getFunction(std::string fn_name) {

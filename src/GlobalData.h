@@ -1,5 +1,14 @@
+/**
+ * This class contains the global state that must be
+ * maintained by Qryptoki.
+ * 
+ * Singleton design pattern: https://stackoverflow.com/a/1008289
+ */
+
 #ifndef _QRYPT_WRAPPER_GLOBALDATA_H
 #define _QRYPT_WRAPPER_GLOBALDATA_H
+
+#include <memory>             // std::shared_ptr
 
 #include "cryptoki.h"         // PKCS#11 types
 
@@ -9,8 +18,13 @@
 
 class GlobalData {
     public:
-        GlobalData();
-        ~GlobalData(){};
+        static GlobalData& getInstance() {
+            static GlobalData instance;
+            return instance;
+        }
+
+        GlobalData(GlobalData const&)     = delete;
+        void operator=(GlobalData const&) = delete;
 
         CK_RV initialize(CK_C_INITIALIZE_ARGS_PTR pInitArgs);
         CK_RV finalize();
@@ -23,7 +37,10 @@ class GlobalData {
 
         CK_RV getRandom(CK_BYTE_PTR data, CK_ULONG len);
     private:
-        BaseHSM *baseHSM;
+        GlobalData();
+        ~GlobalData(){};
+
+        BaseHSM baseHSM;
 
         // Mutex stuff
         bool isMultithreaded;
@@ -33,7 +50,7 @@ class GlobalData {
         CK_LOCKMUTEX customLockMutex;
         CK_UNLOCKMUTEX customUnlockMutex;
 
-        CK_RV getThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs);
+        CK_RV setThreadSettings(CK_C_INITIALIZE_ARGS_PTR pInitArgs);
 
         CK_RV createMutexIfNecessary(CK_VOID_PTR_PTR ppMutex);
         CK_RV destroyMutexIfNecessary(CK_VOID_PTR pMutex);
@@ -43,8 +60,8 @@ class GlobalData {
         // Random buffer stuff
         CK_VOID_PTR randomBufferMutex;
 
-        RandomCollector *randomCollector;
-        RandomBuffer *randomBuffer;
+        std::shared_ptr<RandomCollector> randomCollector;
+        std::unique_ptr<RandomBuffer>    randomBuffer;
         CK_RV setupRandomBuffer();
 };
 

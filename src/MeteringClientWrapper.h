@@ -1,5 +1,5 @@
 /**
- * Edited from file of the same name in QDARACLI -Sam
+ * This class manages Qryptoki's interaction with the MeteringClient.
  */
 
 #ifndef _QRYPT_WRAPPER_METERINGCLIENT_H

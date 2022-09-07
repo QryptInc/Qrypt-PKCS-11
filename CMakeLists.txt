@@ -4,9 +4,12 @@ set(CMAKE_CXX_STANDARD          14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS        OFF)
 
-project(qryptoki CXX)
+project(Qrypt-PKCS-11 LANGUAGES CXX)
 
-# Set debug build
+find_package(CURL      REQUIRED)
+find_package(OpenSSL   REQUIRED)
+find_package(RapidJSON REQUIRED)
+find_package(GTest     REQUIRED)
 
 # set(CMAKE_BUILD_TYPE Debug CACHE STRING "build type" FORCE)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "build type" FORCE)
@@ -22,7 +25,8 @@ add_subdirectory(gtests)
 
 #========
 # Install
-set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/build/package" CACHE PATH "default install path" FORCE)
+# TODO: Allow for better install location, more flexibility
+set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/package" CACHE PATH "default install path" FORCE)
 
 install(TARGETS qryptoki LIBRARY DESTINATION ${INSTALL_LIB_PATH})
-install(FILES inc/cryptoki.h inc/pkcs11.h DESTINATION inc)
+install(FILES inc/cryptoki.h inc/pkcs11.h inc/pkcs11f.h inc/pkcs11t.h inc/qryptoki_pkcs11_vendor_defs.h DESTINATION inc)
