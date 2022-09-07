@@ -67,3 +67,9 @@ Check out the repo's wiki pages here on GitHub!
 ## Contributing
 
 Still working on getting a contributing infrastructure set up, but we're so happy you're interested! Go ahead and publish any issues or PRs here, but understand we may be slow in responding.
+
+## Licensing
+
+This project is under the MIT License. See the LICENSE file for more details.
+
+Dependencies' licenses can be found in deps/third-party-licenses.
