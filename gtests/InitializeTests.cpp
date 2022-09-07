@@ -26,6 +26,18 @@ TEST (InitializeTests, EmptyBaseHSM) {
     revertEnvVar(BASE_HSM_ENV_VAR, stashed_base_hsm);
 }
 
+TEST (InitializeTests, BogusBaseHSM) {
+    char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
+
+    CK_RV rv = initializeSingleThreaded();
+    EXPECT_EQ(rv, CKR_QRYPT_BASE_HSM_OPEN_FAILED);
+
+    rv = finalize();
+    EXPECT_EQ(rv, CKR_CRYPTOKI_NOT_INITIALIZED);
+
+    revertEnvVar(BASE_HSM_ENV_VAR, stashed_base_hsm);
+}
+
 TEST (InitializeTests, BadArgsReservedNonNULL) {
     bool *ptr = new bool;
 

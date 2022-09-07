@@ -100,16 +100,6 @@ TEST (GenerateRandomTests, BogusToken) {
     revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
 }
 
-TEST (GenerateRandomTests, BogusBaseHSM) {
-    char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
-
-    EXPECT_EQ(CKR_QRYPT_BASE_HSM_OPEN_FAILED, initializeSingleThreaded());
-
-    EXPECT_EQ(CKR_CRYPTOKI_NOT_INITIALIZED, finalize());
-
-    revertEnvVar(BASE_HSM_ENV_VAR, stashed_base_hsm);
-}
-
 TEST (GenerateRandomTests, BogusCACert) {
     char *stashed_ca_cert = setEnvVar(CA_CERT_ENV_VAR, BOGUS_PATH);
 
