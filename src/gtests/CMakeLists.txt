@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.19)
-project(Qrypt-PKCS-11-Test LANGUAGES CXX)
-
 find_package(GTest REQUIRED)
 
 # Includes
