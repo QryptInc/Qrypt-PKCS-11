@@ -39,7 +39,7 @@ make
 
 Now, we run the tests. (Don't worry! They only use your token for about 5KB of Qrypt entropy.)
 ```
-./gtests/qryptoki_gtests
+src/gtests/qryptoki_gtests
 ```
 
 If the tests pass, go ahead and install:
@@ -72,4 +72,4 @@ Still working on getting a contributing infrastructure set up, but we're so happ
 
 This project is under the MIT License. See the LICENSE file for more details.
 
-Dependencies' licenses can be found in deps/third-party-licenses.
+Dependencies' licenses can be found in the third-party-licenses folder.

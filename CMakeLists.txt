@@ -21,12 +21,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 add_subdirectory(src)
-add_subdirectory(gtests)
 
 #========
 # Install
 # TODO: Allow for better install location, more flexibility
 set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/package" CACHE PATH "default install path" FORCE)
 
-install(TARGETS qryptoki LIBRARY DESTINATION ${INSTALL_LIB_PATH})
+install(TARGETS qryptoki LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES inc/cryptoki.h inc/pkcs11.h inc/pkcs11f.h inc/pkcs11t.h inc/qryptoki_pkcs11_vendor_defs.h DESTINATION inc)
+
