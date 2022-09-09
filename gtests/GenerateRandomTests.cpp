@@ -100,6 +100,50 @@ TEST (GenerateRandomTests, BogusToken) {
     revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
 }
 
+TEST (GenerateRandomTests, BlockedToken) {
+    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BLOCKED_TOKEN);
+
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 40;
+    CK_BYTE data[len] = {0};
+    EXPECT_EQ(CKR_QRYPT_TOKEN_OTHER_FAIL, C_GenerateRandom(session, data, len));
+
+    EXPECT_TRUE(allZeroes(data, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
+
+    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
+}
+
+TEST (GenerateRandomTests, OutOfEntropyToken) {
+    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, OUT_OF_ENTROPY_TOKEN);
+
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 40;
+    CK_BYTE data[len] = {0};
+    EXPECT_EQ(CKR_QRYPT_TOKEN_OTHER_FAIL, C_GenerateRandom(session, data, len));
+
+    EXPECT_TRUE(allZeroes(data, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
+
+    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
+}
+
 TEST (GenerateRandomTests, BogusBaseHSM) {
     char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
 

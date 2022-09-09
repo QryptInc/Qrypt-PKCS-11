@@ -40,6 +40,8 @@ CK_RV MeteringClientWrapper::collectRandom(uint8_t *dest, size_t goal) const {
 
         if(strncmp("Reponse code: 401", msg, 17) == 0)
             return CKR_QRYPT_TOKEN_INVALID;
+        else if(strncmp("Reponse code: 403", msg, 17) == 0)
+            return CKR_QRYPT_TOKEN_OTHER_FAIL;
         else if(strncmp("Problem with the SSL CA cert", msg, 28) == 0)
             return CKR_QRYPT_CA_CERT_FAILURE;
 
