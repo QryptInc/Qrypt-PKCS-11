@@ -144,6 +144,28 @@ TEST (GenerateRandomTests, OutOfEntropyToken) {
     revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
 }
 
+TEST (GenerateRandomTests, ExpiredToken) {
+    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EXPIRED_TOKEN);
+
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 40;
+    CK_BYTE data[len] = {0};
+    EXPECT_EQ(CKR_QRYPT_TOKEN_INVALID, C_GenerateRandom(session, data, len));
+
+    EXPECT_TRUE(allZeroes(data, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
+
+    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
+}
+
 TEST (GenerateRandomTests, BogusBaseHSM) {
     char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
 

@@ -321,9 +321,9 @@ PKCS_API CK_RV C_GenerateRandom(CK_SESSION_HANDLE hSession, CK_BYTE_PTR pRandomD
 		if(rv == CKR_QRYPT_TOKEN_EMPTY)
 			errorMsg = "Environment variable QRYPT_EAAS_TOKEN empty.";
 		else if(rv == CKR_QRYPT_TOKEN_INVALID)
-			errorMsg = "Could not fulfill random request, is QRYPT_EAAS_TOKEN a valid Qrypt entropy token?";
+			errorMsg = "Could not fulfill random request, is QRYPT_EAAS_TOKEN expired or incorrectly copied?";
 		else if(rv == CKR_QRYPT_TOKEN_OTHER_FAIL)
-			errorMsg = "Could not fulfill random request, is QRYPT_EAAS_TOKEN blocked, expired, or past entropy limit?";
+			errorMsg = "Could not fulfill random request, is QRYPT_EAAS_TOKEN blocked or past entropy limit?";
 		else if(rv == CKR_QRYPT_CA_CERT_FAILURE)
 			errorMsg = "CA certificate error, consider editing QRYPT_CA_CERT_PATH.";
 		else if(rv != CKR_OK)
