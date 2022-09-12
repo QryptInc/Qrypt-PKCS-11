@@ -5,8 +5,8 @@ TEST (SeedRandomTests, NotInitialized) {
     CK_SESSION_HANDLE session = CK_INVALID_HANDLE;
 
     const size_t len = 40;
-    CK_BYTE data[len] = {0};
-    EXPECT_EQ(CKR_CRYPTOKI_NOT_INITIALIZED, C_SeedRandom(session, data, len));
+    CK_BYTE seed[len] = {0};
+    EXPECT_EQ(CKR_CRYPTOKI_NOT_INITIALIZED, C_SeedRandom(session, seed, len));
 }
 
 TEST (SeedRandomTests, SessionNotStarted) {
@@ -34,7 +34,22 @@ TEST (SeedRandomTests, SessionClosed) {
 
     const size_t len = 40;
     CK_BYTE seed[len] = {0};
-    EXPECT_EQ(CKR_SESSION_HANDLE_INVALID, C_GenerateRandom(session, seed, len));
+    EXPECT_EQ(CKR_SESSION_HANDLE_INVALID, C_SeedRandom(session, seed, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
+}
+
+TEST (SeedRandomTests, BadArgs) {
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 40;
+    EXPECT_EQ(CKR_ARGUMENTS_BAD, C_SeedRandom(session, NULL_PTR, len));
 
     EXPECT_EQ(CKR_OK, finalize());
 }

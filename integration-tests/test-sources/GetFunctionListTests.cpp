@@ -1,9 +1,13 @@
-#include "gtest/gtest.h"
-#include "common.h"
+#include <iostream>
 
-TEST (GetFunctionListTests, BadArgs) {
-    CK_RV rv = C_GetFunctionList(NULL_PTR);
-    EXPECT_EQ(rv, CKR_ARGUMENTS_BAD);
+#include "common.h"
+#include "run_tests.h" // runGetFunctionListTests prototype
+
+namespace getfunctionlisttests {
+
+bool badArgs(CK_FUNCTION_LIST_PTR fn_list) {
+    CK_RV rv = fn_list->C_GetFunctionList(NULL_PTR);
+    return rv == CKR_ARGUMENTS_BAD;
 }
 
 bool allFunctionsNonNULL(CK_FUNCTION_LIST_PTR pFunctionList) {
@@ -77,13 +81,46 @@ bool allFunctionsNonNULL(CK_FUNCTION_LIST_PTR pFunctionList) {
         pFunctionList->C_CancelFunction;
 }
 
-TEST (GetFunctionListTests, Valid) {
-    CK_FUNCTION_LIST_PTR pFunctionList = NULL;
+bool valid(CK_FUNCTION_LIST_PTR fn_list) {
+    CK_RV rv;
 
-    CK_RV rv = C_GetFunctionList(&pFunctionList);
-    EXPECT_EQ(rv, CKR_OK);
+    CK_FUNCTION_LIST_PTR pFunctionList;
+    rv = fn_list->C_GetFunctionList(&pFunctionList);
 
-    ASSERT_TRUE(pFunctionList != NULL);
-    EXPECT_TRUE(allFunctionsNonNULL(pFunctionList));
+    return (rv == CKR_OK)
+        && (pFunctionList != NULL_PTR)
+        && (allFunctionsNonNULL(pFunctionList));
 }
 
+} // getfunctionlisttests
+
+void runGetFunctionListTests(CK_FUNCTION_LIST_PTR fn_list,
+                             size_t &tests_run_acc,
+                             size_t &tests_passed_acc) {
+    size_t failed = 0;
+    size_t passed = 0;
+
+    std::cout << "GET FUNCTION LIST" << std::endl;
+
+    if(!getfunctionlisttests::badArgs(fn_list)) {
+        std::cout << "badArgs test failed." << std::endl;
+        failed++;
+    } else {
+        passed++;
+    }
+
+    if(!getfunctionlisttests::valid(fn_list)) {
+        std::cout << "valid test failed." << std::endl;
+        failed++;
+    } else {
+        passed++;
+    }
+
+    std::cout << "Tests run: " << (passed + failed) << std::endl;
+    std::cout << "Tests passed: " << passed << std::endl << std::endl;
+
+    tests_run_acc += (passed + failed);
+    tests_passed_acc += passed;
+
+    finalize(fn_list);
+}
