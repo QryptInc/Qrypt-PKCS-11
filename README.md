@@ -21,6 +21,8 @@ See the [Requirements Setup](../../wiki/Requirements-Setup) page on the GitHub w
 
 ## Getting Started
 
+Check out the related [Quickstarts repo](https://github.com/QryptInc/Qrypt-PKCS-11-Quickstart) for sample code, potential use cases, and examples on how to get set up (the Dockerfiles may be particularly helpful)!
+
 ### Environment variables
   * Required
     * QRYPT_BASE_HSM_PATH: The absolute path to the base HSM. (For example, if you followed the default SoftHSM install, set the variable to "/usr/local/lib/softhsm/libsofthsm2.so".)
@@ -37,26 +39,26 @@ cmake ..
 make
 ```
 
-Now, we run the tests. (Don't worry! They only use your token for about 5KB of Qrypt entropy.)
+Now, we run the unit tests. (Don't worry! They only use your token for about 6KB of Qrypt entropy.)
 ```
-./gtests/qryptoki_gtests
+src/gtests/qryptoki_gtests
 ```
 
-If the tests pass, go ahead and install:
+If the unit tests pass, go ahead and install:
 ```
 make install   # Installs to (top-level) package/ folder
 ```
 
-You can now try the end-to-end example (which consumes 1KB of entropy):
+You can now try the integration tests (which also consume 6KB of entropy):
 ```
-cd ../end-to-end-example
+cd ../integration-tests
 mkdir build && cd build
 cmake ..
 make
-./get_random
+./run_tests
 ```
 
-If all tests pass and the end-to-end output looks alright, then you're good to go! The library to link to is package/lib/libqryptoki.so, and public header files are in package/inc. See the end-to-end example for some sample code.
+If all tests pass, then you're good to go! The library to link to is package/lib/libqryptoki.so, and public header files are in package/inc.
 
 You can track entropy usage on the [portal](https://portal.qrypt.com/).
 
@@ -72,4 +74,4 @@ Still working on getting a contributing infrastructure set up, but we're so happ
 
 This project is under the MIT License. See the LICENSE file for more details.
 
-Dependencies' licenses can be found in deps/third-party-licenses.
+Dependencies' licenses can be found in the third-party-licenses folder.

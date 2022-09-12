@@ -1,6 +1,8 @@
 #ifndef _QRYPT_WRAPPER_GTEST_COMMON_H
 #define _QRYPT_WRAPPER_GTEST_COMMON_H
 
+#include <memory>
+
 #include "cryptoki.h"
 
 static const char *GTEST_TOKEN_LABEL = "gtesttoken";
@@ -21,8 +23,8 @@ static const char *EXPIRED_TOKEN = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6
 static const char *EMPTY_PATH = "";
 static const char *BOGUS_PATH = "boguspath";
 
-char *setEnvVar(const char *var_name, const char *new_value);
-void revertEnvVar(const char *var_name, char *stashed_value);
+std::unique_ptr<char[]> setEnvVar(const char *var_name, const char *new_value);
+void revertEnvVar(const char *var_name, std::unique_ptr<char[]> &stashed_value);
 
 CK_RV initializeSingleThreaded();
 CK_RV initializeMultiThreaded();

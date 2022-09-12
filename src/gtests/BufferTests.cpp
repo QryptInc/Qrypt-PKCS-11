@@ -142,7 +142,6 @@ TEST(BufferTests, MoreThan1024) {
 TEST(BufferTests, NoReuse) {
     srand(time(NULL));
 
-    uint64_t *random_stream_64_bits;
     size_t total_random_in_64_bits;
     size_t sum_request_sizes_in_64_bits = 0;
 
@@ -159,12 +158,13 @@ TEST(BufferTests, NoReuse) {
 
     total_random_in_64_bits = (sum_request_sizes_in_64_bits + (KB / 8) - 1) / (KB / 8) * (KB / 8);
 
-    random_stream_64_bits = new uint64_t[total_random_in_64_bits];
+    std::unique_ptr<uint64_t[]> random_stream_unique_ptr = std::make_unique<uint64_t[]>(total_random_in_64_bits);
+    uint64_t *random_stream_64_bits = random_stream_unique_ptr.get();
+    uint8_t *random_stream_bytes = (uint8_t *)random_stream_64_bits;
+
     for(size_t i = 0; i < total_random_in_64_bits; i++) {
         random_stream_64_bits[i] = i + 1; // very random indeed!
     }
-
-    uint8_t *random_stream_bytes = (uint8_t *)random_stream_64_bits;
 
     std::shared_ptr<MockRandomCollector> randomCollector = std::make_shared<MockRandomCollector>();
 
@@ -203,7 +203,8 @@ TEST(BufferTests, NoReuse) {
 
     RandomBuffer randomBuffer(randomCollector);
 
-    uint64_t *output_stream_64_bits = new uint64_t[sum_request_sizes_in_64_bits];
+    std::unique_ptr<uint64_t[]> output_stream_unique_ptr = std::make_unique<uint64_t[]>(sum_request_sizes_in_64_bits);
+    uint64_t *output_stream_64_bits = output_stream_unique_ptr.get();
     uint8_t *output_stream_bytes = (uint8_t *)output_stream_64_bits;
 
     size_t output_stream_bytes_idx = 0;
@@ -222,7 +223,7 @@ TEST(BufferTests, NoReuse) {
     // We expect 0 to never appear and anything from 1 to total_random_in_64_bits
     // to appear at most once.
 
-    bool *seen = new bool[total_random_in_64_bits + 1];
+    std::unique_ptr<bool[]> seen = std::make_unique<bool[]>(total_random_in_64_bits + 1);
     for(size_t i = 0; i < total_random_in_64_bits + 1; i++)
         seen[i] = false;
 
@@ -234,8 +235,4 @@ TEST(BufferTests, NoReuse) {
     }
 
     EXPECT_FALSE(seen[0]);
-
-    delete[] random_stream_64_bits;
-    delete[] output_stream_64_bits;
-    delete[] seen;
 }

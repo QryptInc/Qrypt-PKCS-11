@@ -57,7 +57,7 @@ TEST (GenerateRandomTests, SessionClosed) {
 }
 
 TEST (GenerateRandomTests, EmptyToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EMPTY_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EMPTY_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -79,7 +79,7 @@ TEST (GenerateRandomTests, EmptyToken) {
 }
 
 TEST (GenerateRandomTests, BogusToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BOGUS_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BOGUS_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -101,7 +101,7 @@ TEST (GenerateRandomTests, BogusToken) {
 }
 
 TEST (GenerateRandomTests, BlockedToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BLOCKED_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BLOCKED_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -123,7 +123,7 @@ TEST (GenerateRandomTests, BlockedToken) {
 }
 
 TEST (GenerateRandomTests, OutOfEntropyToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, OUT_OF_ENTROPY_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, OUT_OF_ENTROPY_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -145,7 +145,7 @@ TEST (GenerateRandomTests, OutOfEntropyToken) {
 }
 
 TEST (GenerateRandomTests, ExpiredToken) {
-    char *stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EXPIRED_TOKEN);
+    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EXPIRED_TOKEN);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -166,18 +166,8 @@ TEST (GenerateRandomTests, ExpiredToken) {
     revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
 }
 
-TEST (GenerateRandomTests, BogusBaseHSM) {
-    char *stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
-
-    EXPECT_EQ(CKR_QRYPT_BASE_HSM_OPEN_FAILED, initializeSingleThreaded());
-
-    EXPECT_EQ(CKR_CRYPTOKI_NOT_INITIALIZED, finalize());
-
-    revertEnvVar(BASE_HSM_ENV_VAR, stashed_base_hsm);
-}
-
 TEST (GenerateRandomTests, BogusCACert) {
-    char *stashed_ca_cert = setEnvVar(CA_CERT_ENV_VAR, BOGUS_PATH);
+    std::unique_ptr<char[]> stashed_ca_cert = setEnvVar(CA_CERT_ENV_VAR, BOGUS_PATH);
 
     EXPECT_EQ(CKR_OK, initializeSingleThreaded());
 
@@ -202,6 +192,21 @@ TEST (GenerateRandomTests, BogusCACert) {
     EXPECT_EQ(CKR_OK, finalize());
     
     revertEnvVar(CA_CERT_ENV_VAR, stashed_ca_cert);
+}
+
+TEST (GenerateRandomTests, BadArgs) {
+    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    CK_SESSION_HANDLE session;
+    EXPECT_EQ(CKR_OK, newSession(slotID, session));
+
+    const size_t len = 2000;
+    EXPECT_EQ(CKR_ARGUMENTS_BAD, C_GenerateRandom(session, NULL_PTR, len));
+
+    EXPECT_EQ(CKR_OK, finalize());
 }
 
 TEST (GenerateRandomTests, ValidRequestBasic) {

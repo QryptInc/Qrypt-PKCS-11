@@ -1,6 +1,6 @@
 # Build directories
 build/*
-end-to-end-example/build/*
+integration-tests/build/*
 
 # Package directories
 package/*
