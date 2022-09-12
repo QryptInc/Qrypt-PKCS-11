@@ -33,10 +33,6 @@
 #ifndef _CRYPTOKI_H
 #define _CRYPTOKI_H
 
-#ifdef _WIN32
-#pragma pack(push, cryptoki, 1)
-#endif
-
 // 1. CK_PTR: The indirection string for making a pointer to an
 // object.
 
@@ -46,31 +42,16 @@
 // an importable Cryptoki library function declaration out of a
 // return type and a function name.
 
-#ifdef _WIN32
-#ifdef CRYPTOKI_EXPORTS
-#define CK_DECLARE_FUNCTION(returnType, name) \
-   returnType __declspec(dllexport) name
-#else
-#define CK_DECLARE_FUNCTION(returnType, name) \
-   returnType __declspec(dllimport) name
-#endif
-#else
 #define CK_DECLARE_FUNCTION(returnType, name) \
    returnType name
-#endif
 
 // 3. CK_DECLARE_FUNCTION_POINTER(returnType, name): A macro
 // which makes a Cryptoki API function pointer declaration or
 // function pointer type declaration out of a return type and a
 // function name.
 
-#ifdef _WIN32
-#define CK_DECLARE_FUNCTION_POINTER(returnType, name) \
-   returnType __declspec(dllimport) (* name)
-#else
 #define CK_DECLARE_FUNCTION_POINTER(returnType, name) \
    returnType (* name)
-#endif
 
 // 4. CK_CALLBACK_FUNCTION(returnType, name): A macro which makes
 // a function pointer type for an application callback out of
@@ -86,9 +67,5 @@
 #endif
 
 #include "pkcs11.h"
-
-#ifdef _WIN32
-#pragma pack(pop, cryptoki)
-#endif
 
 #endif // !_CRYPTOKI_H
