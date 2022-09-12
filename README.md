@@ -37,26 +37,26 @@ cmake ..
 make
 ```
 
-Now, we run the tests. (Don't worry! They only use your token for about 5KB of Qrypt entropy.)
+Now, we run the unit tests. (Don't worry! They only use your token for about 6KB of Qrypt entropy.)
 ```
 ./gtests/qryptoki_gtests
 ```
 
-If the tests pass, go ahead and install:
+If the unit tests pass, go ahead and install:
 ```
 make install   # Installs to (top-level) package/ folder
 ```
 
-You can now try the end-to-end example (which consumes 1KB of entropy):
+You can now try the integration tests (which also consume 6KB of entropy):
 ```
-cd ../end-to-end-example
+cd ../integration-tests
 mkdir build && cd build
 cmake ..
 make
-./get_random
+./run_tests
 ```
 
-If all tests pass and the end-to-end output looks alright, then you're good to go! The library to link to is package/lib/libqryptoki.so, and public header files are in package/inc. See the end-to-end example for some sample code.
+If all tests pass, then you're good to go! The library to link to is package/lib/libqryptoki.so, and public header files are in package/inc.
 
 You can track entropy usage on the [portal](https://portal.qrypt.com/).
 
