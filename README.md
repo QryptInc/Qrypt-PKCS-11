@@ -21,6 +21,8 @@ See the [Requirements Setup](../../wiki/Requirements-Setup) page on the GitHub w
 
 ## Getting Started
 
+Check out the related [Quickstarts repo](https://github.com/QryptInc/Qrypt-PKCS-11-Quickstart) for sample code, potential use cases, and examples on how to get set up (the Dockerfiles may be particularly helpful)!
+
 ### Environment variables
   * Required
     * QRYPT_BASE_HSM_PATH: The absolute path to the base HSM. (For example, if you followed the default SoftHSM install, set the variable to "/usr/local/lib/softhsm/libsofthsm2.so".)
