@@ -1,12 +1,9 @@
-cmake_minimum_required(VERSION 3.19)
-project(Qrypt-PKCS-11-Test LANGUAGES CXX)
-
 find_package(GTest REQUIRED)
 
 # Includes
 set(QRYPTOKI_TEST_PRIVATE_INC_DIRS
-    "../inc"    # for pkcs11.h
-    "../src"    # for RandomCollector.h
+    "../../inc"    # for pkcs11.h
+    "../lib"    # for RandomCollector.h
     ${GTest_INCLUDE_DIRS}  # for gtest/gtest.h
     ${GMock_INCLUDE_DIRS}  # for gmock/gmock.h
 )
