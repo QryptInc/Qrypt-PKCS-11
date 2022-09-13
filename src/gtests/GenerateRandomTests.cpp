@@ -100,50 +100,6 @@ TEST (GenerateRandomTests, BogusToken) {
     revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
 }
 
-TEST (GenerateRandomTests, BlockedToken) {
-    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BLOCKED_TOKEN);
-
-    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
-
-    CK_SLOT_ID slotID;
-    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
-
-    CK_SESSION_HANDLE session;
-    EXPECT_EQ(CKR_OK, newSession(slotID, session));
-
-    const size_t len = 40;
-    CK_BYTE data[len] = {0};
-    EXPECT_EQ(CKR_QRYPT_TOKEN_OTHER_FAIL, C_GenerateRandom(session, data, len));
-
-    EXPECT_TRUE(allZeroes(data, len));
-
-    EXPECT_EQ(CKR_OK, finalize());
-
-    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
-}
-
-TEST (GenerateRandomTests, OutOfEntropyToken) {
-    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, OUT_OF_ENTROPY_TOKEN);
-
-    EXPECT_EQ(CKR_OK, initializeSingleThreaded());
-
-    CK_SLOT_ID slotID;
-    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
-
-    CK_SESSION_HANDLE session;
-    EXPECT_EQ(CKR_OK, newSession(slotID, session));
-
-    const size_t len = 40;
-    CK_BYTE data[len] = {0};
-    EXPECT_EQ(CKR_QRYPT_TOKEN_OTHER_FAIL, C_GenerateRandom(session, data, len));
-
-    EXPECT_TRUE(allZeroes(data, len));
-
-    EXPECT_EQ(CKR_OK, finalize());
-
-    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
-}
-
 TEST (GenerateRandomTests, ExpiredToken) {
     std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, EXPIRED_TOKEN);
 

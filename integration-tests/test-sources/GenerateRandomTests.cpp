@@ -134,35 +134,6 @@ bool bogusToken(CK_FUNCTION_LIST_PTR fn_list) {
     return (rv == CKR_QRYPT_TOKEN_INVALID) && allZeroes(data, len);
 }
 
-bool blockedToken(CK_FUNCTION_LIST_PTR fn_list) {
-    CK_RV rv;
-    finalize(fn_list);
-
-    rv = initializeSingleThreaded(fn_list);
-    if(rv != CKR_OK) return false;
-
-    CK_SLOT_ID slotID;
-    
-    rv = getIntegrationTestSlot(fn_list, slotID);
-    if(rv != CKR_OK) return false;
-
-    CK_SESSION_HANDLE session;
-    
-    rv = newSession(fn_list, slotID, session);
-    if(rv != CKR_OK) return false;
-
-    const size_t len = 2000;
-    CK_BYTE data[len] = {0};
-
-    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, BLOCKED_TOKEN);
-
-    rv = fn_list->C_GenerateRandom(session, data, len);
-
-    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
-
-    return (rv == CKR_QRYPT_TOKEN_OTHER_FAIL) && allZeroes(data, len);
-}
-
 bool expiredToken(CK_FUNCTION_LIST_PTR fn_list) {
     CK_RV rv;
     finalize(fn_list);
@@ -190,35 +161,6 @@ bool expiredToken(CK_FUNCTION_LIST_PTR fn_list) {
     revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
 
     return (rv == CKR_QRYPT_TOKEN_INVALID) && allZeroes(data, len);
-}
-
-bool outOfEntropyToken(CK_FUNCTION_LIST_PTR fn_list) {
-    CK_RV rv;
-    finalize(fn_list);
-
-    rv = initializeSingleThreaded(fn_list);
-    if(rv != CKR_OK) return false;
-
-    CK_SLOT_ID slotID;
-    
-    rv = getIntegrationTestSlot(fn_list, slotID);
-    if(rv != CKR_OK) return false;
-
-    CK_SESSION_HANDLE session;
-    
-    rv = newSession(fn_list, slotID, session);
-    if(rv != CKR_OK) return false;
-
-    const size_t len = 2000;
-    CK_BYTE data[len] = {0};
-
-    std::unique_ptr<char[]> stashed_token = setEnvVar(EAAS_TOKEN_ENV_VAR, OUT_OF_ENTROPY_TOKEN);
-
-    rv = fn_list->C_GenerateRandom(session, data, len);
-
-    revertEnvVar(EAAS_TOKEN_ENV_VAR, stashed_token);
-
-    return (rv == CKR_QRYPT_TOKEN_OTHER_FAIL) && allZeroes(data, len);
 }
 
 bool bogusCACert(CK_FUNCTION_LIST_PTR fn_list) {
@@ -415,20 +357,6 @@ void runGenerateRandomTests(CK_FUNCTION_LIST_PTR fn_list,
 
     if(!generaterandomtests::bogusToken(fn_list)) {
         std::cout << "bogusToken test failed." << std::endl;
-        failed++;
-    } else {
-        passed++;
-    }
-
-    if(!generaterandomtests::blockedToken(fn_list)) {
-        std::cout << "blockedToken test failed." << std::endl;
-        failed++;
-    } else {
-        passed++;
-    }
-
-    if(!generaterandomtests::outOfEntropyToken(fn_list)) {
-        std::cout << "outOfEntropyToken test failed." << std::endl;
         failed++;
     } else {
         passed++;
