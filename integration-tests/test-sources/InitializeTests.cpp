@@ -35,13 +35,13 @@ bool bogusBaseHSM(CK_FUNCTION_LIST_PTR fn_list) {
     CK_RV rv;
     finalize(fn_list);
 
-    std::unique_ptr<char[]> stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, EMPTY_PATH);
+    std::unique_ptr<char[]> stashed_base_hsm = setEnvVar(BASE_HSM_ENV_VAR, BOGUS_PATH);
 
     rv = initializeSingleThreaded(fn_list);
     
     revertEnvVar(BASE_HSM_ENV_VAR, stashed_base_hsm);
 
-    return rv == CKR_QRYPT_BASE_HSM_EMPTY;
+    return rv == CKR_QRYPT_BASE_HSM_OPEN_FAILED;
 }
 
 bool badArgsReservedNonNULL(CK_FUNCTION_LIST_PTR fn_list) {
