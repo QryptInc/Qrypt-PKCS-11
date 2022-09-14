@@ -1,8 +1,8 @@
-# Qryptoki
+# Qrypt-PKCS-11
 
 ## Introduction
 
-Qryptoki is a wrapper of the PKCS#11 interface that returns quantum-sourced entropy to C_GenerateRandom calls.
+This repository contains the source code for qryptoki, a wrapper of the PKCS#11 interface that returns quantum-sourced entropy to C_GenerateRandom calls.
 
 ## Requirements
   * Supported OSes
