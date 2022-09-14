@@ -29,4 +29,4 @@ set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/package" CACHE PATH "default ins
 
 install(TARGETS qryptoki LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES inc/cryptoki.h inc/pkcs11.h inc/pkcs11f.h inc/pkcs11t.h inc/qryptoki_pkcs11_vendor_defs.h DESTINATION inc)
-
+install(TARGETS mini-softhsm2-util DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)

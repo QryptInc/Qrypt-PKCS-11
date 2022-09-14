@@ -62,6 +62,19 @@ If all tests pass, then you're good to go! The library to link to is package/lib
 
 You can track entropy usage on the [portal](https://portal.qrypt.com/).
 
+## mini-softhsm2-util
+
+Most applications that consume a PKCS#11 library will require you to have a token already set up. The main way to do this is programmatically with C_InitToken, but we include a command-line tool to do it for you!
+
+```
+make mini-softhsm2-util   # Start in top-level build/
+make install
+cd ..                     # Go back to root project folder
+./package/bin/mini-softhsm2-util --module "./package/lib/libqryptoki.so" --init-token --free --label "New token!"
+```
+
+You can also display slot information with --show-slots.
+
 ## Documentation, support, and feedback
 
 Check out the repo's wiki pages here on GitHub!
