@@ -327,7 +327,7 @@ bool noReuseManyThreads(CK_FUNCTION_LIST_PTR fn_list) {
     std::thread threads[NUM_THREADS];
     CK_RV rvs[NUM_THREADS];
 
-    const size_t BYTES_PER_32_BITS = 4;
+    const size_t BYTES_PER_64_BITS = 8;
 
     rv = initializeMultiThreaded(fn_list);
     if(rv != CKR_OK) return false;
@@ -341,8 +341,8 @@ bool noReuseManyThreads(CK_FUNCTION_LIST_PTR fn_list) {
     CK_BYTE data[NUM_THREADS][MAX_REQUEST_SIZE_IN_BYTES];
 
     for(size_t i = 0; i < NUM_THREADS; i++) {
-        size_t size_in_32_bits = (rand() % MAX_REQUEST_SIZE_IN_BYTES) / BYTES_PER_32_BITS;
-        request_sizes_in_bytes[i] = BYTES_PER_32_BITS * size_in_32_bits;
+        size_t size_in_64_bits = (rand() % MAX_REQUEST_SIZE_IN_BYTES) / BYTES_PER_64_BITS;
+        request_sizes_in_bytes[i] = BYTES_PER_64_BITS * size_in_64_bits;
 
         for(size_t j = 0; j < MAX_REQUEST_SIZE_IN_BYTES; j++) {
             data[i][j] = (CK_BYTE)0;
@@ -363,14 +363,14 @@ bool noReuseManyThreads(CK_FUNCTION_LIST_PTR fn_list) {
             return false;
     }
 
-    std::set<uint32_t> seen;
+    std::set<uint64_t> seen;
 
     for(size_t i = 0; i < NUM_THREADS; i++) {
-        uint32_t *data_in_32_bits = (uint32_t *)data[i];
+        uint64_t *data_in_64_bits = (uint64_t *)data[i];
 
-        for(size_t j =  0; j < request_sizes_in_bytes[i] / BYTES_PER_32_BITS; j++) {
-            if(seen.count(data_in_32_bits[j]) != 0) return false;
-            seen.insert(data_in_32_bits[j]);
+        for(size_t j =  0; j < request_sizes_in_bytes[i] / BYTES_PER_64_BITS; j++) {
+            if(seen.count(data_in_64_bits[j]) != 0) return false;
+            seen.insert(data_in_64_bits[j]);
         }
     }
 
