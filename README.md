@@ -37,7 +37,7 @@ cmake ..
 make
 ```
 
-Now, we run the unit tests. (Don't worry! They only use your token for about 6KB of Qrypt entropy.)
+Now, we run the unit tests. (Don't worry! They only use your token for about 20KB of Qrypt entropy.)
 ```
 src/gtests/qryptoki_gtests
 ```
@@ -47,7 +47,7 @@ If the unit tests pass, go ahead and install:
 make install   # Installs to (top-level) package/ folder
 ```
 
-You can now try the integration tests (which also consume 6KB of entropy):
+You can now try the integration tests (which also consume 20KB of entropy):
 ```
 cd ../integration-tests
 mkdir build && cd build

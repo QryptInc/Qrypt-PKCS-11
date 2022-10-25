@@ -1,4 +1,7 @@
-#include <thread>
+#include <thread>       /* std::thread */
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+#include <set>          /* std::set */
 
 #include "qryptoki_pkcs11_vendor_defs.h"
 
@@ -239,4 +242,60 @@ TEST (GenerateRandomTests, ValidRequestManyThreads) {
     }
 
     EXPECT_EQ(CKR_OK, finalize());
+}
+
+/**
+ * There are 2^64 possible uint64_t's, and we assume that ~3200 randomly chosen
+ * uint64_t's will all be distinct. This is probably true, because 3200 << 2^(64/2).
+ */
+TEST (GenerateRandomTests, NoReuseManyThreads) {
+    srand(time(NULL));
+
+    const size_t NUM_THREADS = 100;
+    const size_t MAX_REQUEST_SIZE_IN_BYTES = 256;
+    std::thread threads[NUM_THREADS];
+    CK_RV rvs[NUM_THREADS];
+
+    const size_t BYTES_PER_64_BITS = 8;
+
+    EXPECT_EQ(CKR_OK, initializeMultiThreaded());
+
+    CK_SLOT_ID slotID;
+    EXPECT_EQ(CKR_OK, getGTestSlot(slotID));
+
+    size_t request_sizes_in_bytes[NUM_THREADS];
+    CK_BYTE data[NUM_THREADS][MAX_REQUEST_SIZE_IN_BYTES];
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        size_t size_in_64_bits = (rand() % MAX_REQUEST_SIZE_IN_BYTES) / BYTES_PER_64_BITS;
+        request_sizes_in_bytes[i] = BYTES_PER_64_BITS * size_in_64_bits;
+
+        for(size_t j = 0; j < MAX_REQUEST_SIZE_IN_BYTES; j++) {
+            data[i][j] = (CK_BYTE)0;
+        }
+    }
+
+    for(size_t i = 0; i < NUM_THREADS; i++)
+        threads[i] = std::thread(getRandom, slotID, data[i], request_sizes_in_bytes[i], std::ref(rvs[i]));
+    
+    for(size_t i = 0; i < NUM_THREADS; i++)
+        threads[i].join();
+    
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        EXPECT_EQ(CKR_OK, rvs[i]);
+        EXPECT_TRUE(request_sizes_in_bytes[i] == 0 || !allZeroes(data[i], request_sizes_in_bytes[i]));
+    }
+
+    EXPECT_EQ(CKR_OK, finalize());
+
+    std::set<uint64_t> seen;
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        uint64_t *data_in_64_bits = (uint64_t *)data[i];
+
+        for(size_t j = 0; j < request_sizes_in_bytes[i] / BYTES_PER_64_BITS; j++) {
+            EXPECT_EQ(seen.count(data_in_64_bits[j]), 0);
+            seen.insert(data_in_64_bits[j]);
+        }
+    }
 }
