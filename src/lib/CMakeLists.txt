@@ -6,6 +6,7 @@ add_library(qryptoki SHARED
     metering-client/HttpRandomGetter.cpp
     metering-client/RandomGetter.cpp
     BaseHSM.cpp
+    CurlWrapper.cpp
     RandomBuffer.cpp
     log.cpp
     osmutex.cpp

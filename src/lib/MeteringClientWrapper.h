@@ -34,7 +34,7 @@ class MeteringClientWrapper : public RandomCollector {
     ~MeteringClientWrapper() override;
 
     // Collects QRandom from source
-    CK_RV collectRandom(uint8_t *dest, size_t goal) const override;
+    CK_RV collectRandom(uint8_t *dest, size_t goal) override;
 };
 
 #endif /* !_QRYPT_WRAPPER_METERINGCLIENT_H */

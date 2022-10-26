@@ -5,6 +5,7 @@
 #include "log.h"                         // logging macros
 #include "osmutex.h"                     // mutex functions
 #include "MeteringClientWrapper.h"       // MeteringClientWrapper
+#include "CurlWrapper.h"                 // CurlWrapper
 
 #include "GlobalData.h"
 
@@ -162,7 +163,7 @@ CK_RV GlobalData::setupRandomBuffer() {
 
 	std::string token(token_c_str);
 
-    this->randomCollector = std::make_unique<MeteringClientWrapper>(token);
+    this->randomCollector = std::make_unique<CurlWrapper>(token);
 
     try {
         this->randomBuffer = std::make_unique<RandomBuffer>(this->randomCollector);

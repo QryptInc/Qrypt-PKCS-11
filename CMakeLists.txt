@@ -11,9 +11,6 @@ find_package(OpenSSL   REQUIRED)
 find_package(RapidJSON REQUIRED)
 find_package(GTest     REQUIRED)
 
-# set(CMAKE_BUILD_TYPE Debug CACHE STRING "build type" FORCE)
-set(CMAKE_BUILD_TYPE Release CACHE STRING "build type" FORCE)
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Setting compilier settings to debug")
     add_compile_options(-g)

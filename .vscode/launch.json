@@ -1,0 +1,49 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // LSAN needs ptrace which is not available for our current debug setups. There
+    // are work-arounds:
+    // https://stackoverflow.com/questions/54022889/leaksanitizer-not-working-under-gdb-in-ubuntu-18-04
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch qryptoki_gtests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/src/gtests/qryptoki_gtests",
+            "args": [
+                // "--gtest_filter=*ValidRequestBasic*",
+                "--gtest_output=xml:qryptoki_gtests.xml"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [ 
+                {"name": "QRYPT_EAAS_TOKEN", "value": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImViNmZmMGIwNjgyZTQ0NDliNDUzNTIyZWY3MzhmYTViIn0.eyJleHAiOjE2ODQ0MTg5MDIsIm5iZiI6MTY1Mjg4MjkwMiwiaXNzIjoiQVVUSCIsImlhdCI6MTY1Mjg4MjkwMiwiZ3JwcyI6WyJQVUIiLCJQVUIiXSwiYXVkIjpbIlFERUEiLCJSUFMiXSwicmxzIjpbIlFERVVTUiIsIlJORFVTUiJdLCJjaWQiOiJadnZpMWFGWWIxX0h4b282aldJWW8iLCJkdmMiOiJOQSIsImp0aSI6IjU2MGQ2M2FmMGI4MTQ1ODliMzM3Y2JjOWQ3MTYyZWEzIiwidHlwIjozfQ.LTYR4VUdEiye29b1BHJ3Im4OJzv_rd9z3vP1j2vKJSEgzN_uewDE_XMxNnt8D6-AMWeZaqRENdQUsxqoKDlepA" },
+                {"name": "QRYPT_BASE_HSM_PATH", "value": "/usr/local/lib/softhsm/libsofthsm2.so" }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+        },
+        {
+            "name": "(gdb) Launch integration tests",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/integration-tests/build/run_tests",
+            "args": [
+                // "--gtest_filter=*ValidRequestBasic*",
+                "--gtest_output=xml:integration_gtests.xml"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/integration-tests/build",
+            "environment": [ 
+                {"name": "QRYPT_EAAS_TOKEN", "value": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImViNmZmMGIwNjgyZTQ0NDliNDUzNTIyZWY3MzhmYTViIn0.eyJleHAiOjE2ODQ0MTg5MDIsIm5iZiI6MTY1Mjg4MjkwMiwiaXNzIjoiQVVUSCIsImlhdCI6MTY1Mjg4MjkwMiwiZ3JwcyI6WyJQVUIiLCJQVUIiXSwiYXVkIjpbIlFERUEiLCJSUFMiXSwicmxzIjpbIlFERVVTUiIsIlJORFVTUiJdLCJjaWQiOiJadnZpMWFGWWIxX0h4b282aldJWW8iLCJkdmMiOiJOQSIsImp0aSI6IjU2MGQ2M2FmMGI4MTQ1ODliMzM3Y2JjOWQ3MTYyZWEzIiwidHlwIjozfQ.LTYR4VUdEiye29b1BHJ3Im4OJzv_rd9z3vP1j2vKJSEgzN_uewDE_XMxNnt8D6-AMWeZaqRENdQUsxqoKDlepA" },
+                {"name": "QRYPT_BASE_HSM_PATH", "value": "/usr/local/lib/softhsm/libsofthsm2.so" }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+        },
+    ]
+}

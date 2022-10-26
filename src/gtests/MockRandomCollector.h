@@ -7,7 +7,7 @@
 
 class MockRandomCollector : public RandomCollector {
     public:
-        MOCK_METHOD(CK_RV, collectRandom, (uint8_t *dest, size_t goal), (const, override));
+        MOCK_METHOD(CK_RV, collectRandom, (uint8_t *dest, size_t goal), (override));
 };
 
 #endif /* !_QRYPT_MOCK_RANDOM_COLLECTOR_H */

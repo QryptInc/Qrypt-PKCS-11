@@ -27,7 +27,7 @@ MeteringClientWrapper::~MeteringClientWrapper() {}
 
 std::string MeteringClientWrapper::prependHttps(std::string url) { return std::string("https://") + url; }
 
-CK_RV MeteringClientWrapper::collectRandom(uint8_t *dest, size_t goal) const {
+CK_RV MeteringClientWrapper::collectRandom(uint8_t *dest, size_t goal)  {
     if (goal == 0) return CKR_OK;
     
     size_t goalRoundUpToKB = ((goal + KB - 1) / KB) * KB;
