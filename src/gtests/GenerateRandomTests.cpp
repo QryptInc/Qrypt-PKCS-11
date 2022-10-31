@@ -137,8 +137,6 @@ TEST (GenerateRandomTests, BogusCACert) {
     CK_BYTE data[len] = {0};
 
     CK_RV rv = C_GenerateRandom(session, data, len);
-    // TODO: Different code path from MeteringClient?
-    // EXPECT_TRUE(rv == CKR_OK || rv == CKR_QRYPT_CA_CERT_FAILURE) << rv;
     EXPECT_TRUE(rv == CKR_OK || rv == CKR_QRYPT_TOKEN_INVALID) << rv;
 
     if(rv == CKR_OK) {

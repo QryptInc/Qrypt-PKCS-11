@@ -10,12 +10,7 @@ set(QRYPTOKI_TEST_PRIVATE_INC_DIRS
 
 # Sources
 set(TEST_SOURCES 
-    metering-client/lib/base64.cpp
-    metering-client/lib/test-httpgetter.cpp
-    metering-client/lib/test-version.cpp
-    metering-client/src/test-accesstoken.cpp
-    metering-client/src/test-commonutils.cpp
-    metering-client/src/test-httpgetterimpl.cpp
+    base64.cpp
     common.cpp
     InitializeTests.cpp
     FinalizeTests.cpp

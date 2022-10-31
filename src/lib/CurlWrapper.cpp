@@ -60,7 +60,6 @@ CK_RV CurlWrapper::collectRandom(uint8_t *dest, size_t goal) {
                  return CKR_GENERAL_ERROR;
             } break;
             case 401: {
-                // TODO: Different code path from MeteringClient?
                  DEBUG_MSG("Unauthorized, invalid Credentials or problem with the SSL CA cert.");
                  return CKR_QRYPT_TOKEN_INVALID;
             } break;

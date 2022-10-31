@@ -20,10 +20,6 @@ struct CurlResponse {
 // CurlWrapper is a wrapper class to pull random from EaaS
 class CurlWrapper : public RandomCollector {
   public:
-    // TODO: Why is this public
-    // Token to access the endpoint
-    std::string token;
-
     // Custom constructor
     CurlWrapper(std::string token);
 
@@ -34,6 +30,9 @@ class CurlWrapper : public RandomCollector {
     CK_RV collectRandom(uint8_t *dest, size_t goal) override;
 
   private:
+    // Token to access the endpoint
+    std::string token;
+
     std::string cacert_path;
 
     ::rapidjson::Document restJson;

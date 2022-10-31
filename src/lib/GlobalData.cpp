@@ -4,7 +4,6 @@
 #include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
 #include "log.h"                         // logging macros
 #include "osmutex.h"                     // mutex functions
-#include "MeteringClientWrapper.h"       // MeteringClientWrapper
 #include "CurlWrapper.h"                 // CurlWrapper
 
 #include "GlobalData.h"

@@ -19,7 +19,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [ 
-                {"name": "QRYPT_EAAS_TOKEN", "value": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImViNmZmMGIwNjgyZTQ0NDliNDUzNTIyZWY3MzhmYTViIn0.eyJleHAiOjE2ODQ0MTg5MDIsIm5iZiI6MTY1Mjg4MjkwMiwiaXNzIjoiQVVUSCIsImlhdCI6MTY1Mjg4MjkwMiwiZ3JwcyI6WyJQVUIiLCJQVUIiXSwiYXVkIjpbIlFERUEiLCJSUFMiXSwicmxzIjpbIlFERVVTUiIsIlJORFVTUiJdLCJjaWQiOiJadnZpMWFGWWIxX0h4b282aldJWW8iLCJkdmMiOiJOQSIsImp0aSI6IjU2MGQ2M2FmMGI4MTQ1ODliMzM3Y2JjOWQ3MTYyZWEzIiwidHlwIjozfQ.LTYR4VUdEiye29b1BHJ3Im4OJzv_rd9z3vP1j2vKJSEgzN_uewDE_XMxNnt8D6-AMWeZaqRENdQUsxqoKDlepA" },
+                {"name": "QRYPT_EAAS_TOKEN", "value": "<put your Qrypt token scoped to entropy here>" },
                 {"name": "QRYPT_BASE_HSM_PATH", "value": "/usr/local/lib/softhsm/libsofthsm2.so" }
             ],
             "externalConsole": false,
@@ -38,7 +38,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/integration-tests/build",
             "environment": [ 
-                {"name": "QRYPT_EAAS_TOKEN", "value": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImViNmZmMGIwNjgyZTQ0NDliNDUzNTIyZWY3MzhmYTViIn0.eyJleHAiOjE2ODQ0MTg5MDIsIm5iZiI6MTY1Mjg4MjkwMiwiaXNzIjoiQVVUSCIsImlhdCI6MTY1Mjg4MjkwMiwiZ3JwcyI6WyJQVUIiLCJQVUIiXSwiYXVkIjpbIlFERUEiLCJSUFMiXSwicmxzIjpbIlFERVVTUiIsIlJORFVTUiJdLCJjaWQiOiJadnZpMWFGWWIxX0h4b282aldJWW8iLCJkdmMiOiJOQSIsImp0aSI6IjU2MGQ2M2FmMGI4MTQ1ODliMzM3Y2JjOWQ3MTYyZWEzIiwidHlwIjozfQ.LTYR4VUdEiye29b1BHJ3Im4OJzv_rd9z3vP1j2vKJSEgzN_uewDE_XMxNnt8D6-AMWeZaqRENdQUsxqoKDlepA" },
+                {"name": "QRYPT_EAAS_TOKEN", "value": "<put your Qrypt token scoped to entropy here>" },
                 {"name": "QRYPT_BASE_HSM_PATH", "value": "/usr/local/lib/softhsm/libsofthsm2.so" }
             ],
             "externalConsole": false,
