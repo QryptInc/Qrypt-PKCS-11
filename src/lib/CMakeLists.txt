@@ -8,6 +8,6 @@ add_library(qryptoki SHARED
     GlobalData.cpp
     main.cpp)
 
-    target_include_directories(qryptoki PUBLIC "../../inc")
+target_include_directories(qryptoki PUBLIC "../../inc")
 
-    target_link_libraries(qryptoki PUBLIC dl curl)
+target_link_libraries(qryptoki PUBLIC dl curl)

@@ -1,7 +1,3 @@
-/**
- * Edited from file of the same name in QDARACLI -Sam
- */
-
 #include <cstring>     // strncmp
 
 #include "qryptoki_pkcs11_vendor_defs.h" // CKR_QRYPT_*
@@ -66,10 +62,6 @@ CK_RV CurlWrapper::collectRandom(uint8_t *dest, size_t goal) {
             case 403: {
                  DEBUG_MSG("Unknown server failure %zu", response.code);
                  return CKR_QRYPT_TOKEN_OTHER_FAIL;
-            } break;
-            case 404: {
-                 DEBUG_MSG("Random pool is expired, cannot retrieve sample");
-                 return CKR_GENERAL_ERROR;
             } break;
             case 429: {
                  DEBUG_MSG("Forbidden, you have hit the rate limit.");
