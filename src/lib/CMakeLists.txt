@@ -1,18 +1,13 @@
 add_library(qryptoki SHARED
-    metering-client/AccessToken.cpp
-    metering-client/base64.cpp
-    metering-client/CommonUtils.cpp
-    metering-client/CurlWrapper.cpp
-    metering-client/HttpRandomGetter.cpp
-    metering-client/RandomGetter.cpp
+    base64.cpp
     BaseHSM.cpp
+    CurlWrapper.cpp
     RandomBuffer.cpp
     log.cpp
     osmutex.cpp
     GlobalData.cpp
-    MeteringClientWrapper.cpp
     main.cpp)
 
-target_include_directories(qryptoki PUBLIC "../../inc" "metering-client")
+target_include_directories(qryptoki PUBLIC "../../inc")
 
 target_link_libraries(qryptoki PUBLIC dl curl)
