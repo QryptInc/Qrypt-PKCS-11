@@ -21,8 +21,6 @@ See the [Requirements Setup](../../wiki/Requirements-Setup) page on the GitHub w
 
 ## Getting Started
 
-Check out the related [Quickstarts repo](https://github.com/QryptInc/Qrypt-PKCS-11-Quickstart) for sample code, potential use cases, and examples on how to get set up (the Dockerfiles may be particularly helpful)!
-
 ### Environment variables
   * Required
     * QRYPT_BASE_HSM_PATH: The absolute path to the base HSM. (For example, if you followed the default SoftHSM install, set the variable to "/usr/local/lib/softhsm/libsofthsm2.so".)
@@ -39,7 +37,7 @@ cmake ..
 make
 ```
 
-Now, we run the unit tests. (Don't worry! They only use your token for about 6KB of Qrypt entropy.)
+Now, we run the unit tests. (Don't worry! They only use your token for about 20KB of Qrypt entropy.)
 ```
 src/gtests/qryptoki_gtests
 ```
@@ -49,7 +47,7 @@ If the unit tests pass, go ahead and install:
 make install   # Installs to (top-level) package/ folder
 ```
 
-You can now try the integration tests (which also consume 6KB of entropy):
+You can now try the integration tests (which also consume 20KB of entropy):
 ```
 cd ../integration-tests
 mkdir build && cd build

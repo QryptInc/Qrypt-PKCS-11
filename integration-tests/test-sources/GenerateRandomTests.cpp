@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include <set>
 
 #include "qryptoki_pkcs11_vendor_defs.h"
 
@@ -317,6 +318,65 @@ bool validRequestManyThreads(CK_FUNCTION_LIST_PTR fn_list) {
     return true;
 }
 
+bool noReuseManyThreads(CK_FUNCTION_LIST_PTR fn_list) {
+    CK_RV rv;
+    finalize(fn_list);
+
+    const size_t NUM_THREADS = 100;
+    const size_t MAX_REQUEST_SIZE_IN_BYTES = 256;
+    std::thread threads[NUM_THREADS];
+    CK_RV rvs[NUM_THREADS];
+
+    const size_t BYTES_PER_64_BITS = 8;
+
+    rv = initializeMultiThreaded(fn_list);
+    if(rv != CKR_OK) return false;
+
+    CK_SLOT_ID slotID;
+
+    rv = getIntegrationTestSlot(fn_list, slotID);
+    if(rv != CKR_OK) return false;
+
+    size_t request_sizes_in_bytes[NUM_THREADS];
+    CK_BYTE data[NUM_THREADS][MAX_REQUEST_SIZE_IN_BYTES];
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        size_t size_in_64_bits = (rand() % MAX_REQUEST_SIZE_IN_BYTES) / BYTES_PER_64_BITS;
+        request_sizes_in_bytes[i] = BYTES_PER_64_BITS * size_in_64_bits;
+
+        for(size_t j = 0; j < MAX_REQUEST_SIZE_IN_BYTES; j++) {
+            data[i][j] = (CK_BYTE)0;
+        }
+    }
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        threads[i] = std::thread(getRandom, fn_list, slotID, data[i], request_sizes_in_bytes[i], std::ref(rvs[i]));
+    }
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        threads[i].join();
+    }
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        if(rvs[i] != CKR_OK) return false;
+        if(request_sizes_in_bytes[i] != 0 && allZeroes(data[i], request_sizes_in_bytes[i]))
+            return false;
+    }
+
+    std::set<uint64_t> seen;
+
+    for(size_t i = 0; i < NUM_THREADS; i++) {
+        uint64_t *data_in_64_bits = (uint64_t *)data[i];
+
+        for(size_t j =  0; j < request_sizes_in_bytes[i] / BYTES_PER_64_BITS; j++) {
+            if(seen.count(data_in_64_bits[j]) != 0) return false;
+            seen.insert(data_in_64_bits[j]);
+        }
+    }
+
+    return true;
+}
+
 } // generaterandomtests
 
 void runGenerateRandomTests(CK_FUNCTION_LIST_PTR fn_list,
@@ -399,6 +459,13 @@ void runGenerateRandomTests(CK_FUNCTION_LIST_PTR fn_list,
 
     if(!generaterandomtests::validRequestManyThreads(fn_list)) {
         std::cout << "validRequestManyThreads test failed." << std::endl;
+        failed++;
+    } else {
+        passed++;
+    }
+
+    if(!generaterandomtests::noReuseManyThreads(fn_list)) {
+        std::cout << "noReuseManyThreads test failed." << std::endl;
         failed++;
     } else {
         passed++;
