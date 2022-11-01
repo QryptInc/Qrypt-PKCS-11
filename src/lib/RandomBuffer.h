@@ -6,6 +6,7 @@
 #define _QRYPT_WRAPPER_RANDOMBUFFER_H
 
 #include <memory>
+#include <sys/mman.h>          // m(un)lock
 
 #include "cryptoki.h"          // CK_RV
 
@@ -13,6 +14,7 @@
 
 struct BufferDeleter {
     void operator() (uint8_t *buffer_ptr) const {
+        munlock(buffer_ptr, KB * sizeof(uint8_t));
         free(buffer_ptr);
     }
 };
