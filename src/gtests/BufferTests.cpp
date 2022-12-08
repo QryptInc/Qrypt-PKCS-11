@@ -1,6 +1,7 @@
 #include <algorithm>    /* std::fill_n */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include <optional>     /* std::optional */
 
 #include "qryptoki_pkcs11_vendor_defs.h"
 
@@ -28,9 +29,11 @@ TEST(BufferTests, All255) {
         .WillOnce(DoAll(SetArrayArgument<0>(very_random, &very_random[1024]),
                         Return(CKR_OK)));
 
-    RandomBuffer randomBuffer(randomCollector);
+    std::optional<RandomBuffer> randomBuffer;
+    ASSERT_NO_THROW(randomBuffer.emplace(randomCollector));
+    ASSERT_TRUE(randomBuffer.has_value());
 
-    CK_RV rv = randomBuffer.getRandom(dest, 20);
+    CK_RV rv = randomBuffer->getRandom(dest, 20);
 
     EXPECT_EQ(rv, CKR_OK);
 
@@ -47,9 +50,11 @@ TEST(BufferTests, CollectReturnsNotOk) {
     EXPECT_CALL(*randomCollector, collectRandom(_, 1024))
         .WillOnce(Return(CKR_QRYPT_TOKEN_INVALID));
 
-    RandomBuffer randomBuffer(randomCollector);
+    std::optional<RandomBuffer> randomBuffer;
+    ASSERT_NO_THROW(randomBuffer.emplace(randomCollector));
+    ASSERT_TRUE(randomBuffer.has_value());
 
-    CK_RV rv = randomBuffer.getRandom(dest, 20);
+    CK_RV rv = randomBuffer->getRandom(dest, 20);
 
     EXPECT_EQ(rv, CKR_QRYPT_TOKEN_INVALID);
 
@@ -75,10 +80,12 @@ TEST(BufferTests, AllNonzero) {
         .WillOnce(DoAll(SetArrayArgument<0>(&very_random[1024], &very_random[2048]),
                         Return(CKR_OK)));
 
-    RandomBuffer randomBuffer(randomCollector);
-    
+    std::optional<RandomBuffer> randomBuffer;
+    ASSERT_NO_THROW(randomBuffer.emplace(randomCollector));
+    ASSERT_TRUE(randomBuffer.has_value());
+
     for(size_t iteration = 0; iteration < 400; iteration++) {
-        CK_RV rv = randomBuffer.getRandom(&dest[5 * iteration], 5);
+        CK_RV rv = randomBuffer->getRandom(&dest[5 * iteration], 5);
         EXPECT_EQ(rv, CKR_OK);
     }
 
@@ -116,18 +123,20 @@ TEST(BufferTests, MoreThan1024) {
                             Return(CKR_OK)));
     }
 
-    RandomBuffer randomBuffer(randomCollector);
+    std::optional<RandomBuffer> randomBuffer;
+    ASSERT_NO_THROW(randomBuffer.emplace(randomCollector));
+    ASSERT_TRUE(randomBuffer.has_value());
 
-    CK_RV rv = randomBuffer.getRandom(dest, 4000);
+    CK_RV rv = randomBuffer->getRandom(dest, 4000);
     EXPECT_EQ(rv, CKR_OK);
 
-    rv = randomBuffer.getRandom(&dest[4000], 2000);
+    rv = randomBuffer->getRandom(&dest[4000], 2000);
     EXPECT_EQ(rv, CKR_OK);
 
-    rv = randomBuffer.getRandom(&dest[6000], 1000);
+    rv = randomBuffer->getRandom(&dest[6000], 1000);
     EXPECT_EQ(rv, CKR_OK);
 
-    rv = randomBuffer.getRandom(&dest[7000], 3000);
+    rv = randomBuffer->getRandom(&dest[7000], 3000);
     EXPECT_EQ(rv, CKR_OK);
 }
 
@@ -201,7 +210,9 @@ TEST(BufferTests, NoReuse) {
         }
     }
 
-    RandomBuffer randomBuffer(randomCollector);
+    std::optional<RandomBuffer> randomBuffer;
+    ASSERT_NO_THROW(randomBuffer.emplace(randomCollector));
+    ASSERT_TRUE(randomBuffer.has_value());
 
     std::unique_ptr<uint64_t[]> output_stream_unique_ptr = std::make_unique<uint64_t[]>(sum_request_sizes_in_64_bits);
     uint64_t *output_stream_64_bits = output_stream_unique_ptr.get();
@@ -213,7 +224,7 @@ TEST(BufferTests, NoReuse) {
         uint8_t *output_begin = &output_stream_bytes[output_stream_bytes_idx];
         size_t request_size_in_bytes = request_sizes_in_bytes[i];
 
-        CK_RV rv = randomBuffer.getRandom(output_begin, request_size_in_bytes);
+        CK_RV rv = randomBuffer->getRandom(output_begin, request_size_in_bytes);
         EXPECT_EQ(rv, CKR_OK);
 
         output_stream_bytes_idx += request_size_in_bytes;
